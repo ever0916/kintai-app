@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 1
+  f_kintai: false
+  t_kintai: 2014-03-05 19:24:20
+
+two:
+  user_id: 1
+  f_kintai: false
+  t_kintai: 2014-03-05 19:24:20

@@ -1,0 +1,31 @@
+<h1>Listing kintais</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>F kintai</th>
+      <th>T kintai</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @kintais.each do |kintai| %>
+      <tr>
+        <td><%= kintai.user_id %></td>
+        <td><%= kintai.f_kintai %></td>
+        <td><%= kintai.t_kintai %></td>
+        <td><%= link_to 'Show', kintai %></td>
+        <td><%= link_to 'Edit', edit_kintai_path(kintai) %></td>
+        <td><%= link_to 'Destroy', kintai, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Kintai', new_kintai_path %>

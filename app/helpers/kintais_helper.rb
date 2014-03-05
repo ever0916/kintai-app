@@ -1,0 +1,2 @@
+module KintaisHelper
+end
