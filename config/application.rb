@@ -24,5 +24,8 @@ module KintaiApp
     config.time_zone = 'Tokyo'
     #DB保存時のタイムゾーンをJSTに変更
     config.active_record.default_timezone = :local
+
+    # for bootsrap-sass
+    config.assets.precompile += %w(*.png *.jpg *.jpeg *.gif)
   end
 end
