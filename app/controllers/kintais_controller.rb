@@ -5,6 +5,7 @@ class KintaisController < ApplicationController
   # GET /kintais.json
   def index
     @kintais = Kintai.all
+    @kintai  = Kintai.new
   end
 
   # GET /kintais/1
@@ -24,25 +25,43 @@ class KintaisController < ApplicationController
   # POST /kintais
   # POST /kintais.json
   def create
-    @kintai = Kintai.new(kintai_params)
+    @kintai      = Kintai.new(kintai_params)
+    @kintai_last = Kintai.last
+    @user        = User.find(current_user.id)
 
-    respond_to do |format|
-      if @kintai.save
-        format.html { redirect_to @kintai, notice: 'Kintai was successfully created.' }
-        format.json { render action: 'show', status: :created, location: @kintai }
-      else
-        format.html { render action: 'new' }
-        format.json { render json: @kintai.errors, status: :unprocessable_entity }
+
+    if @kintai_last != nil
+      if @kintai.t_kintai.to_i < @kintai_last.t_kintai.to_i
+        return redirect_to @kintai, :notice => "最新の勤怠情報より前の時間に出勤退勤は出来ません。勤怠情報の修正が必要な場合は修正ボタンからお願いします。"
       end
     end
-  end
 
+    respond_to do |format|
+      begin
+        ActiveRecord::Base.transaction do
+          @kintai.save!
+
+          if @user.f_state == false
+            @user.update_attributes!(:f_state => true ) 
+            format.html { redirect_to @kintai, notice: 'おはようございます。正常に記録されました。'}
+          else
+            @user.update_attributes!(:f_state => false )
+            format.html { redirect_to @kintai, notice: 'お疲れ様です。正常に記録されました。'}
+          end
+          format.json { render action: 'show', status: :created, location: @kintai }
+        end
+        rescue => e
+          redirect_to @kintai, :notice => "例外が発生しました。記録に失敗しました。"+e.message
+          format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
+        end
+    end
+  end
   # PATCH/PUT /kintais/1
   # PATCH/PUT /kintais/1.json
   def update
     respond_to do |format|
       if @kintai.update(kintai_params)
-        format.html { redirect_to @kintai, notice: 'Kintai was successfully updated.' }
+        format.html { redirect_to @kintai, notice: '勤怠情報を修正しました。' }
         format.json { head :no_content }
       else
         format.html { render action: 'edit' }

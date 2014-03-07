@@ -2,11 +2,14 @@ KintaiApp::Application.routes.draw do
   devise_scope :user do
     root :to => "devise/sessions#new"
   end
+  
+
 
   devise_for :users
   resources :users
 
   resources :kintais
+  get :index, :to => "kintais#index", :as => "user_root" #はuser_rootが設定されている時ログイン後そこにリダイレクトする。
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
