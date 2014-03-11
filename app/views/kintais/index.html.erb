@@ -1,29 +1,61 @@
-<h1><%= current_user.name %>さん。<br>シベリア抑留へようこそ</h1>
+<h1><%= current_user.name %>さん。<br>勤怠管理へようこそ</h1>
 
-<table>
+<%= form_tag(get_my_record_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
+  <div class ="form-group">
+    <div class ="pull-left">
+      <%=
+        sprintf((
+        select_date @target_date_min,
+        {:use_month_numbers => true,
+        :discard_day => true,
+        :date_separator => '%s'},
+        { :class => "" }
+        ).html_safe,'年').html_safe
+      %>
+      月の勤怠データを表示しています。
+    </div>
+    <div class="pull-left">
+      <%= submit_tag '絞込',:class => "btn btn-primary" %>
+    </div>
+  </div>
+<% end %>
+<table border="1" style="border:solid 1px #EAEAEA;">
   <thead>
     <tr>
-      <th>User</th>
-      <th>T kintai</th>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th>出勤時刻</th>
+      <th>退勤時刻</th>
+      <th>　　　　</th>
+      <th>　　　　</th>
     </tr>
   </thead>
 
   <tbody>
-    <% @kintais.each do |kintai| %>
+    <% @kintais.each_with_index do |kintai,count| %>
       <tr>
-        <td><%= kintai.user_id %></td>
-        <td><%= kintai.t_kintai %></td>
+        <td><%= kintai.t_syukkin %></td>
+        <% if count == @kintais.length - 1 && current_user.f_state == true %>
+          <td>　現在勤務中です。　</td>
+        <% else %>
+          <td><%= kintai.t_taikin %></td>
+        <% end %>
         <td><%= link_to '修正', edit_kintai_path(kintai) %></td>
-        <td><%= link_to '削除', kintai, method: :delete, data: { confirm: '出勤と退勤のレコードがセットで削除されます。本来間違いがある場合は削除では無く修正するべきですが、修正では対応できない万が一の状態に備えて用意した機能になります。本当に削除してよろしいですか？' } %></td>
+        <td><%= link_to '削除', kintai, method: :delete, data: { confirm: '出勤と退勤のレコードがセットで削除されます。本当に削除してよろしいですか？' } %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
 <br>
-<%= render 'kintai_form' %>
+<%=
+  if current_user.f_state == false
+    render "syukkin_form"
+  else
+    render "taikin_form"
+  end
+%>
+<br>
+<%= button_to '設定', setting_kintais_path, :method => :get, :class => "btn btn-default" %>
+<br>
+<%= button_to 'ログアウト', destroy_user_session_path, :method => :delete, :class => "btn btn-success" %>
 
-<%= button_to '脱獄 (ログアウト)', destroy_user_session_path, :method => :delete, :class => "btn btn-success" %>
+

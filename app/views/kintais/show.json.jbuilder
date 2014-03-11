@@ -1,1 +1,1 @@
-json.extract! @kintai, :id, :user_id, :t_kintai, :created_at, :updated_at
+json.extract! @kintai, :id, :user_id, :t_syukkin, :t_taikin, :created_at, :updated_at

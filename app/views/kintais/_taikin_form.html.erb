@@ -1,0 +1,37 @@
+<%= form_for(@kintai ,:url => taikin_update_kintai_path(@kintai.id),:html => { :class => "form-horizontal" } ) do |f| %>
+  <% if @kintai.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@kintai.errors.count, "error") %> prohibited this kintai from being saved:</h2>
+
+      <ul>
+      <% @kintai.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
+
+  <%= f.datetime_select :t_syukkin,{:default => @kintai.t_syukkin,:use_month_numbers => true,:include_blank => false,:datetime_separator => "",:time_separator => ""},{:class => "hidden"} %>
+
+  <div class ="form-group">
+    <div class ="pull-left">
+      <%= f.label "時間入力：",:class => "control-label pull-left" %>
+      <%=
+        sprintf((
+        f.datetime_select :t_taikin,
+        {:use_month_numbers => true,
+        :include_blank => false,
+        :date_separator => '%s',
+        :datetime_separator => '</div><div class="pull-left">日</div><div class="pull-left">',
+        :time_separator => '</div><div class="pull-left">時</div><div class="pull-left">'},
+        {:class => ""}
+        ) + '</div><div class="pull-left">分'.html_safe, '</div><div class="pull-left">年</div><div class="pull-left">', '</div><div class="pull-left">月</div><div class="pull-left">').html_safe
+      %>
+    </div>
+    <div class="pull-left">
+      <%= f.submit '退勤',:class => "btn btn-primary" %>
+    </div>
+  </div>
+<% end %>

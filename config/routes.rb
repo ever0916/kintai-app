@@ -2,13 +2,15 @@ KintaiApp::Application.routes.draw do
   devise_scope :user do
     root :to => "devise/sessions#new"
   end
-  
-
 
   devise_for :users
   resources :users
 
-  resources :kintais
+  resources :kintais do
+    patch :taikin_update, :on => :member
+    patch :get_my_record, :on => :collection
+    get   :setting      , :on => :collection
+  end
   get :index, :to => "kintais#index", :as => "user_root" #はuser_rootが設定されている時ログイン後そこにリダイレクトする。
 
   # The priority is based upon order of creation: first created -> highest priority.

@@ -1,0 +1,26 @@
+<h1>各種設定</h1>
+<h3>CSVの出力</h3>
+<%= form_tag("test",:method => "PATCH",:class => "form-horizontal" ) do %>
+  <div class ="form-group">
+    <div class ="pull-left">
+      <%=
+        sprintf((
+        select_date @target_date_min << 1,
+        {:use_month_numbers => true,
+        :discard_day => true,
+        :date_separator => '%s'},
+        { :class => "" }
+        ).html_safe,'年').html_safe
+      %>
+      月
+    </div>
+    <div class="pull-left">
+      <%= submit_tag 'の全社員CSV出力',:class => "btn btn-primary" %>
+    </div>
+  </div>
+<% end %>
+<br>
+<br>
+<%= button_to 'ログアウト', destroy_user_session_path, :method => :delete, :class => "btn btn-success" %>
+<br>
+<%= link_to 'Back', kintais_path %>
