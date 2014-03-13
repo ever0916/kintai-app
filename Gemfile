@@ -35,6 +35,7 @@ end
 gem "therubyracer"
 gem 'devise'
 gem 'bootstrap-sass', '3.0.2.0'
+gem 'spreadsheet'
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.1.2'

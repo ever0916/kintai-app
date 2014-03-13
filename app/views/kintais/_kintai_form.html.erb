@@ -14,8 +14,8 @@
   <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
 
   <div class="form-group">
-    <div class="pull-left">
-      <%= f.label "出勤時間修正：",:class => "control-label pull-left" %>
+    <%= f.label "出勤時間修正：",:class => "control-label pull-left" %>
+    <div class="pull-left date-select">
       <%=
         sprintf((
         f.datetime_select :t_syukkin,
@@ -23,18 +23,18 @@
         :use_month_numbers => true,
         :include_blank => false,
         :date_separator => '%s',
-        :datetime_separator => '</div><div class="pull-left">日</div><div class="pull-left">',
-        :time_separator => '</div><div class="pull-left">時</div><div class="pull-left">'},
+        :datetime_separator => '</div><div class="pull-left date-select">日</div><div class="pull-left date-select">',
+        :time_separator => '</div><div class="pull-left date-select">時</div><div class="pull-left date-select">'},
         {:class => ""}
-        ) + '</div><div class="pull-left">分'.html_safe, '</div><div class="pull-left">年</div><div class="pull-left">', '</div><div class="pull-left">月</div><div class="pull-left">').html_safe
+        ) + '</div><div class="pull-left date-select">分'.html_safe, '</div><div class="pull-left date-select">年</div><div class="pull-left date-select">', '</div><div class="pull-left date-select">月</div><div class="pull-left date-select">').html_safe
       %>
     </div>
   </div>
 
   <% if @kintai.id != @kintais.last.id %>
     <div class ="form-group">
-      <div class ="pull-left">
-        <%= f.label "退勤時間修正：",:class => "control-label pull-left" %>
+      <%= f.label "退勤時間修正：",:class => "control-label pull-left" %>
+      <div class ="pull-left date-select">
         <%=
           sprintf((
           f.datetime_select :t_taikin,
@@ -42,10 +42,10 @@
           :use_month_numbers => true,
           :include_blank => false,
           :date_separator => '%s',
-          :datetime_separator => '</div><div class="pull-left">日</div><div class="pull-left">',
-          :time_separator => '</div><div class="pull-left">時</div><div class="pull-left">'},
+          :datetime_separator => '</div><div class="pull-left date-select">日</div><div class="pull-left date-select">',
+          :time_separator => '</div><div class="pull-left date-select">時</div><div class="pull-left date-select">'},
           {:class => ""}
-          ) + '</div><div class="pull-left">分'.html_safe, '</div><div class="pull-left">年</div><div class="pull-left">', '</div><div class="pull-left">月</div><div class="pull-left">').html_safe
+          ) + '</div><div class="pull-left date-select">分'.html_safe, '</div><div class="pull-left date-select">年</div><div class="pull-left date-select">', '</div><div class="pull-left date-select">月</div><div class="pull-left date-select">').html_safe
         %>
       </div>
     </div>

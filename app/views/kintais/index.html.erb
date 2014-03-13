@@ -2,7 +2,7 @@
 
 <%= form_tag(get_my_record_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
   <div class ="form-group">
-    <div class ="pull-left">
+    <div class ="pull-left date-select">
       <%=
         sprintf((
         select_date @target_date_min,
@@ -32,11 +32,11 @@
   <tbody>
     <% @kintais.each_with_index do |kintai,count| %>
       <tr>
-        <td><%= kintai.t_syukkin %></td>
+        <td><%= kintai.t_syukkin.strftime("%Y-%m-%d %H:%M") %></td>
         <% if count == @kintais.length - 1 && current_user.f_state == true %>
           <td>　現在勤務中です。　</td>
         <% else %>
-          <td><%= kintai.t_taikin %></td>
+          <td><%= kintai.t_taikin.strftime("%Y-%m-%d %H:%M") %></td>
         <% end %>
         <td><%= link_to '修正', edit_kintai_path(kintai) %></td>
         <td><%= link_to '削除', kintai, method: :delete, data: { confirm: '出勤と退勤のレコードがセットで削除されます。本当に削除してよろしいですか？' } %></td>

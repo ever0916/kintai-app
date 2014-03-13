@@ -10,6 +10,7 @@ KintaiApp::Application.routes.draw do
     patch :taikin_update, :on => :member
     patch :get_my_record, :on => :collection
     get   :setting      , :on => :collection
+    patch :export       , :on => :collection
   end
   get :index, :to => "kintais#index", :as => "user_root" #はuser_rootが設定されている時ログイン後そこにリダイレクトする。
 

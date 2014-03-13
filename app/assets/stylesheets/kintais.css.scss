@@ -1,3 +1,20 @@
 // Place all the styles related to the Kintais controller here.
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
+
+.container{
+  table{
+    th,td{
+      padding-left:10px;
+      padding-right:10px;
+    }
+  }
+
+  .date-select{
+    padding-top:6px;
+  }
+
+  .date-btn{
+    margin-left:10px;
+  }
+}
