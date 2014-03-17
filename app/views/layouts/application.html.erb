@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>KintaiApp</title>
+  <title>しゃちコレ！☆ミ</title>
   <%= stylesheet_link_tag    "application", media: "all", "data-turbolinks-track" => true %>
   <%= javascript_include_tag "application", "data-turbolinks-track" => true %>
   <%= csrf_meta_tags %>
@@ -11,19 +11,21 @@
 <div class="container" style="margin-top:45px;">
   <div class="row">
     <% if notice %>
-      <div class="alert alert-danger">
+      <div class="alert alert-success">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <%= notice %>
       </div>
     <% end %>
     <% if alert %>
-      <div class="alert alert-warning">
+      <div class="alert alert-danger">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <%= alert %>
       </div>
     <% end %>
 
     <%= yield %>
+
+    <%= render partial: "footer" %>
   </div>
 </div>
 

@@ -1,4 +1,4 @@
-<%= form_for(@kintai,:html => { :class => "form-horizontal" } ) do |f| %>
+<%= form_for(@kintai,:html => { :class => "" } ) do |f| %>
   <% if @kintai.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@kintai.errors.count, "error") %> prohibited this kintai from being saved:</h2>
@@ -13,10 +13,10 @@
 
   <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
 
-  <div class="form-group">
-    <div class="pull-left">
-      <%= f.submit '出勤',:class => "btn btn-warning date-btn" %>
-    </div>
+
+  <div>
+    <%= f.submit '出勤',:class => "btn btn-warning" %>
   </div>
+
 
 <% end %>

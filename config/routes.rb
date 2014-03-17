@@ -4,7 +4,7 @@ KintaiApp::Application.routes.draw do
   end
 
   devise_for :users
-  resources :users
+  #resources :users
 
   resources :kintais do
     patch :taikin_update, :on => :member

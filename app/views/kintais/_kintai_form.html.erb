@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <% if @kintai.id != @kintais.last.id %>
+  <% if !(@kintai.id == @kintais.last.id && current_user.f_state == true) %>
     <div class ="form-group">
       <%= f.label "退勤時間修正：",:class => "control-label pull-left" %>
       <div class ="pull-left date-select">
@@ -50,7 +50,7 @@
       </div>
     </div>
   <% else %>
-    <%= f.datetime_select :t_taikin,{:default => @kintai.t_taikin,:use_month_numbers => true,:include_blank => false,:date_separator => '',:datetime_separator => '',:time_separator => ''},{:class => "hidden"} %>
+    <%= f.datetime_select :t_taikin,{:default => @kintai.t_taikin,:use_month_numbers => true,:include_blank => true,:date_separator => '',:datetime_separator => '',:time_separator => ''},{:class => "hidden"} %>
   <% end %>
   
   <div class="form-group">

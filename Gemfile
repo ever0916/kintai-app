@@ -36,6 +36,8 @@ gem "therubyracer"
 gem 'devise'
 gem 'bootstrap-sass', '3.0.2.0'
 gem 'spreadsheet'
+gem 'rspec-rails'
+gem 'i18n_generators', :group => :development #あくまでgeneratorであり、実行時はRailsの機能のみで動くので、開発環境でのみ読み込まれるように設定
 
 # Use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.1.2'

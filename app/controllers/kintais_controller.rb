@@ -15,7 +15,7 @@ class KintaisController < ApplicationController
     #指定した月の勤怠レコードを@kintaisに取得。
     @target_date_min = Date.new(Time.now.year,Time.now.month,1)
     target_date_max = @target_date_min >> 1
-    @kintais = @kintais.where(:t_syukkin => @target_date_min..target_date_max )
+    @kintais = @kintais.reorder(nil).where(:t_syukkin => @target_date_min..target_date_max ).order("t_syukkin ASC")#reorder(nil)で直前のorder byを無効に出来るっぽい
   end
 
   def get_my_record
@@ -83,16 +83,6 @@ class KintaisController < ApplicationController
         rz = (user_kintai.t_taikin - user_kintai.t_syukkin).divmod(3600)
         sheet[count+3,2] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
 
-        if user_kintai.t_taikin - user_kintai.t_syukkin < 0
-          f_err = true
-          sheet.row(count+3).set_format(0,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(1,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(2,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(3,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet[count+3,3] = "過去に戻ってしまった可能性があります。"
-          next
-        end
-
         @chk.each_with_index do |chk,cnt|
 
           if chk.t_taikin == nil || cnt == count
@@ -151,7 +141,7 @@ class KintaisController < ApplicationController
   # GET /kintais/1/edit
   def edit
     if @kintais == nil
-      return redirect_to kintais_url, :notice => "不正なアクセスです。出禁←(勤怠データが無いのに編集画面にアクセスしようとしました。)"
+      return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(勤怠データが無いのに編集画面にアクセスしようとしました。)"
     end
   end
 
@@ -163,7 +153,7 @@ class KintaisController < ApplicationController
 
     if @kintai_last != nil
       if current_user.f_state == true
-        return redirect_to kintais_url, :notice => "不正なアクセスです。出禁←(出勤中に出勤しようとした。本来ありえない動作)"
+        return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(出勤中に出勤しようとした。本来ありえない動作)"
       end
     end
 
@@ -178,7 +168,7 @@ class KintaisController < ApplicationController
           format.json { render action: 'show', status: :created, location: @kintai }
         end
         rescue => e
-          format.html { redirect_to kintais_url, :notice => "例外が発生しました。記録に失敗しました。"+e.message }
+          format.html { redirect_to kintais_url, :alert => "例外が発生しました。記録に失敗しました。"+e.message }
           format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
         end
     end
@@ -198,7 +188,7 @@ class KintaisController < ApplicationController
           format.json { head :no_content }
         end
         rescue => e
-          format.html { redirect_to kintais_url,:notice => "例外が発生しました。記録に失敗しました。"+e.message}
+          format.html { redirect_to kintais_url,:alert => "例外が発生しました。修正に失敗しました。"+e.message}
           format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
         end
     end
@@ -206,10 +196,10 @@ class KintaisController < ApplicationController
 
   def taikin_update
     if @kintai == nil
-      return redirect_to @kintai, :notice => "不正なアクセスです。出禁←(対象の勤怠データが無いのに退勤しようとしました。)"
+      return redirect_to @kintai, :alert => "不正なアクセスです。出禁←(対象の勤怠データが無いのに退勤しようとしました。)"
     end
     if current_user.f_state == false
-      return redirect_to kintais_url, :notice => "不正なアクセスです。出禁←(退勤中に退勤しようとした。本来ありえない動作)"
+      return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(退勤中に退勤しようとした。本来ありえない動作)"
     end
 
     respond_to do |format|
@@ -221,7 +211,7 @@ class KintaisController < ApplicationController
           format.json { head :no_content }
         end
         rescue => e
-          format.html { redirect_to kintais_url,:notice => "例外が発生しました。記録に失敗しました。"+e.message}
+          format.html { redirect_to kintais_url,:alert => "例外が発生しました。記録に失敗しました。"+e.message}
           format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
         end
     end
@@ -243,7 +233,7 @@ class KintaisController < ApplicationController
           format.json { head :no_content }
         end
         rescue => e
-          format.html { redirect_to kintais_url,:notice => "例外が発生しました。削除に失敗しました。"+e.message}
+          format.html { redirect_to kintais_url,:alert => "例外が発生しました。削除に失敗しました。"+e.message}
           format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
         end
     end
@@ -256,7 +246,7 @@ class KintaisController < ApplicationController
       @kintai = Kintai.find(params[:id])
     end
     def set_kintais
-      @kintais = Kintai.where(:user_id => current_user.id).order("t_syukkin ASC")
+      @kintais = Kintai.where(:user_id => current_user.id).order("id ASC")
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.

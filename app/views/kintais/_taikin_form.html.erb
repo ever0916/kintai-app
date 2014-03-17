@@ -1,4 +1,4 @@
-<%= form_for(@kintai ,:url => taikin_update_kintai_path(@kintai.id),:html => { :class => "form-horizontal" } ) do |f| %>
+<%= form_for(@kintai ,:url => taikin_update_kintai_path(@kintai.id),:html => { :class => "" } ) do |f| %>
   <% if @kintai.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(@kintai.errors.count, "error") %> prohibited this kintai from being saved:</h2>
@@ -13,10 +13,8 @@
 
   <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
 
-  <div class ="form-group">
-    <div class="pull-left">
-      <%= f.submit '退勤',:class => "btn btn-primary date-btn" %>
-    </div>
+  <div>
+    <%= f.submit '退勤',:class => "btn btn-primary" %>
   </div>
   
 <% end %>

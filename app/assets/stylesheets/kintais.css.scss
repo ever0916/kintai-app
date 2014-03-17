@@ -3,10 +3,17 @@
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
 .container{
-  table{
-    th,td{
-      padding-left:10px;
-      padding-right:10px;
+  .kintai-box{
+    width:520px;
+    min-height:300px;
+    height:300px;
+    overflow-y:scroll;
+
+    table{
+      th,td{
+        padding-left:10px;
+        padding-right:10px;
+      }
     }
   }
 

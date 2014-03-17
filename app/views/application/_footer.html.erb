@@ -1,0 +1,14 @@
+<footer>
+  <% if user_signed_in? %>
+    <br>
+    <% if ( get_now_path.match(/^\/kintais\/setting$/).nil? ) %>
+      <%= link_to '[設定]', setting_kintais_path, :method => :get, :class => "" %>
+    <% end %>
+    <% if ( get_now_path.match(/^\/kintais\/get_my_record$/).nil? && get_now_path.match(/^\/kintais$/).nil? ) %>
+      <br>
+      <%= link_to '[Back]', kintais_path, :method => :get, :class => "" %>
+    <% end %>
+    <br>
+    <%= link_to '[ログアウト]', destroy_user_session_path, :method => :delete, :class => "" %>
+  <% end %>
+</footer>

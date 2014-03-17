@@ -1,5 +1,45 @@
 <h1><%= current_user.name %>さん。<br>勤怠管理へようこそ</h1>
 
+<%=
+  if current_user.f_state == false
+    render "syukkin_form"
+  else
+    render "taikin_form"
+  end
+%>
+<br>
+<div class="kintai-box">
+  <table border="1" style="border:solid 1px #EAEAEA;">
+    <thead>
+      <tr>
+        <th>出勤時刻</th>
+        <th>退勤時刻</th>
+        <th>　　　　</th>
+        <th>　　　　</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @kintais.each_with_index do |kintai,count| %>
+        <% if kintai.t_taikin.nil?  %> 
+          <tr style="background:#77FF77">
+        <% else %>
+          </tr> 
+        <% end %>
+          <td><%= kintai.t_syukkin.strftime("%Y-%m-%d %H:%M") %></td>
+          <% if kintai.t_taikin.nil? %>
+            <td>　現在勤務中です。　</td>
+          <% else %>
+            <td><%= kintai.t_taikin.strftime("%Y-%m-%d %H:%M") %></td>
+          <% end %>
+          <td><%= link_to '[修正]', edit_kintai_path(kintai) %></td>
+          <td><%= link_to '[削除]', kintai, method: :delete, data: { confirm: '出勤と退勤のレコードがセットで削除されます。本当に削除してよろしいですか？' } %></td>
+        </tr>
+      <% end %>
+      <tr id="idBoxBtm" class="hidden"></tr>
+    </tbody>
+  </table>
+</div>
 <%= form_tag(get_my_record_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
   <div class ="form-group">
     <div class ="pull-left date-select">
@@ -19,43 +59,20 @@
     </div>
   </div>
 <% end %>
-<table border="1" style="border:solid 1px #EAEAEA;">
-  <thead>
-    <tr>
-      <th>出勤時刻</th>
-      <th>退勤時刻</th>
-      <th>　　　　</th>
-      <th>　　　　</th>
-    </tr>
-  </thead>
+<strong>[使い方・注意等]</strong><br>
+※[出勤],[退勤]は交互にしか押せません。<br>
+※[出勤]を押すと現在時刻で出勤レコードを登録します。レコードのステータスは勤務中(背景が緑)となります。<br>
+※[退勤]を押すと、勤務中のレコードに退勤が押されます。<br>
+※勤怠レコードは出勤時間の昇順に並びます。時間の修正によって、勤務中のレコードが一番下に来ないこともありえます。<br>
+※[設定]画面から全社員の勤怠エクセルを出力できます。(年月指定)<br>
+※修正によって時間の整合性が取れなくなったレコードは、エクセル出力時にエラーになります。
+<br><br>
 
-  <tbody>
-    <% @kintais.each_with_index do |kintai,count| %>
-      <tr>
-        <td><%= kintai.t_syukkin.strftime("%Y-%m-%d %H:%M") %></td>
-        <% if count == @kintais.length - 1 && current_user.f_state == true %>
-          <td>　現在勤務中です。　</td>
-        <% else %>
-          <td><%= kintai.t_taikin.strftime("%Y-%m-%d %H:%M") %></td>
-        <% end %>
-        <td><%= link_to '修正', edit_kintai_path(kintai) %></td>
-        <td><%= link_to '削除', kintai, method: :delete, data: { confirm: '出勤と退勤のレコードがセットで削除されます。本当に削除してよろしいですか？' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<br>
-<%=
-  if current_user.f_state == false
-    render "syukkin_form"
-  else
-    render "taikin_form"
-  end
-%>
-<br>
-<%= button_to '設定', setting_kintais_path, :method => :get, :class => "btn btn-default" %>
-<br>
-<%= button_to 'ログアウト', destroy_user_session_path, :method => :delete, :class => "btn btn-success" %>
+<script>
+  $(document).ready(function() {
+    //ページ読み込み後最新の勤怠レコードが見えるようにスクロールする
+    $(".kintai-box").scrollTop($(".kintai-box")[0].scrollHeight);
+  });
+</script>
 
 

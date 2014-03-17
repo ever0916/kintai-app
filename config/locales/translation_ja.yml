@@ -1,0 +1,25 @@
+ja:
+  activerecord:
+    models:
+      kintai: kintai  #g
+      user: user  #g
+
+    attributes:
+      kintai:
+        t_syukkin: t_syukkin  #g
+        t_taikin: t_taikin  #g
+        user: :activerecord.models.user  #g
+
+      user:
+        current_sign_in_at: current_sign_in_at  #g
+        current_sign_in_ip: current_sign_in_ip  #g
+        email: email  #g
+        encrypted_password: encrypted_password  #g
+        f_state: f_state  #g
+        kintais: kintais  #g
+        last_sign_in_at: last_sign_in_at  #g
+        last_sign_in_ip: last_sign_in_ip  #g
+        name: name  #g
+        remember_created_at: remember_created_at  #g
+        reset_password_sent_at: reset_password_sent_at  #g
+        reset_password_token: reset_password_token  #g
