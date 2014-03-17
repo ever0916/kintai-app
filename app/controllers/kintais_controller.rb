@@ -63,6 +63,11 @@ class KintaisController < ApplicationController
       sheet[2,1] = "退勤時刻"
       sheet[2,2] = "勤務時間"
 
+      for i in 0..2 do
+        sheet.column(i).width = 15 # カラム幅設定
+      end
+      sheet.column(3).width = 100
+
       goukei = 0
       f_err  = false
       @user_kintais.each_with_index do |user_kintai,count|
@@ -109,6 +114,7 @@ class KintaisController < ApplicationController
         rz = goukei.divmod(3600)
         sheet[@user_kintais.length+3,2] = "計#{rz[0]}時間#{rz[1].to_i / 60}分"
       end
+      sheet.merge_cells(@user_kintais.length+5,0,@user_kintais.length+5,3)#セルの結合。引き数はstart_row,start_col,end_row,end_col
       sheet[@user_kintais.length+5,0] = "※背景が赤いレコードは誤りがあるか、退勤時刻が入力されていません。"
     end
 
