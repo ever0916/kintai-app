@@ -27,8 +27,5 @@ module KintaiApp
 
     # for bootsrap-sass
     config.assets.precompile += %w(*.png *.jpg *.jpeg *.gif)
-
-    #herokuにデプロイするために追加(rails4では不要らしいがエラー履くので)
-    config.assets.initialize_on_precompile = false
   end
 end
