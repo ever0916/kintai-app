@@ -39,8 +39,8 @@ gem 'spreadsheet'
 gem 'rspec-rails'
 gem 'i18n_generators', :group => :development #あくまでgeneratorであり、実行時はRailsの機能のみで動くので、開発環境でのみ読み込まれるように設定
 group :production do
-  gem 'pg'
- gem 'rails_12factor'
+  gem 'pg', '0.15.1'
+  gem 'rails_12factor', '0.0.2'
 end
 
 # Use ActiveModel has_secure_password
