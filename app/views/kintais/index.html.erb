@@ -40,7 +40,7 @@
     </tbody>
   </table>
 </div>
-<%= form_tag(get_my_record_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
+<%= form_tag("index",:method => "GET",:class => "form-horizontal" ) do %>
   <div class ="form-group">
     <div class ="pull-left date-select">
       <%=
@@ -55,15 +55,15 @@
       月の勤怠データを表示しています。
     </div>
     <div class="pull-left">
-      <%= submit_tag '絞込',:class => "btn btn-primary" %>
+      <%= submit_tag '絞込',:disable_with => "処理中…",:class => "btn btn-primary" %>
     </div>
   </div>
 <% end %>
 <strong>[使い方・注意等]</strong><br>
-※[出勤],[退勤]は交互にしか押せません。<br>
 ※[出勤]を押すと現在時刻で出勤レコードを登録します。レコードのステータスは勤務中(背景が緑)となります。<br>
 ※[退勤]を押すと、勤務中のレコードに退勤が押されます。<br>
 ※勤怠レコードは出勤時間の昇順に並びます。時間の修正によって、勤務中のレコードが一番下に来ないこともありえます。<br>
+※1人あたり最大<%= G_MAX_USER_KINTAIS %>件勤怠レコードを登録できます。それ以上登録する場合、出勤時間の古いレコードから削除されます。<br>
 ※[設定]画面から全社員の勤怠エクセルを出力できます。(年月指定)<br>
 ※修正によって時間の整合性が取れなくなったレコードは、エクセル出力時にエラーになります。
 <br><br>

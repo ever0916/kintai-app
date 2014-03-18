@@ -4,13 +4,13 @@ KintaiApp::Application.routes.draw do
   end
 
   devise_for :users
-  #resources :users
 
   resources :kintais do
-    patch :taikin_update, :on => :member
-    patch :get_my_record, :on => :collection
-    get   :setting      , :on => :collection
-    patch :export       , :on => :collection
+    patch :taikin_update  , :on => :member
+    get   :setting        , :on => :collection
+    patch :export         , :on => :collection
+    patch :db_correction  , :on => :collection
+    patch :user_destroy   , :on => :collection
   end
   get :index, :to => "kintais#index", :as => "user_root" #はuser_rootが設定されている時ログイン後そこにリダイレクトする。
 

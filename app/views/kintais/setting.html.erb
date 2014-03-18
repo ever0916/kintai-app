@@ -1,4 +1,5 @@
 <h1>各種設定</h1>
+<hr>
 <h3>エクセルファイルの出力</h3>
 <%= form_tag(export_kintais_path(:format => :xls),:method => "PATCH",:class => "form-horizontal" ) do %>
   <div class ="form-group">
@@ -19,3 +20,35 @@
     </div>
   </div>
 <% end %>
+
+<% if current_user.f_admin == true %>
+  <br>
+  <hr>
+  <h3>社員を削除</h3>
+  <%= form_tag(user_destroy_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
+    <div class ="form-group">
+      <div class = "col-xs-3">
+        <%= select(:user,:name,User.all.collect{ |user| [user.name] },{},:class => "form-control input-sm") %>
+      </div>
+      <div class = "pull-left date-select">
+        さんを
+      </div>
+      <div class = "pull-left">
+        <%= submit_tag '削除',:class => "btn btn-danger date-btn", data: { confirm: 'ユーザーを削除すると、そのユーザーの勤怠情報も全て削除されます。本当によろしいですか？' } %>
+      </div>
+    </div>
+  <% end %>
+  <br>
+  <hr>
+  <h3>データベースの修正</h3>
+  <%= form_tag(db_correction_kintais_path,:method => "PATCH",:class => "form-horizontal" ) do %>
+    <div class ="form-group">
+      <div>
+        <%= @f_db_err == true ? submit_tag('修正する',:disable_with => "処理中…",:class => "btn btn-primary date-btn") : "現在修正の必要はありません。" %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+  <br>
+  <hr>
+

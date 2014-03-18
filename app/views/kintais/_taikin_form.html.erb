@@ -14,7 +14,7 @@
   <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
 
   <div>
-    <%= f.submit '退勤',:class => "btn btn-primary" %>
+    <%= f.submit '退勤',:disable_with => "処理中…",:class => "btn btn-primary" %>
   </div>
   
 <% end %>

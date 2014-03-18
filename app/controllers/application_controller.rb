@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
-  
-  helper_method :get_now_path
+  #ヘルパーメソッドの宣言
+  helper_method :get_remainder_users #残りの登録可能ユーザー数を返す
+  helper_method :get_now_path #現在のパスを返す
   
   before_filter :authenticate_user!
   before_filter :configure_permitted_parameters, if: :devise_controller?
