@@ -40,6 +40,7 @@ gem 'rspec-rails'
 gem 'i18n_generators', :group => :development #あくまでgeneratorであり、実行時はRailsの機能のみで動くので、開発環境でのみ読み込まれるように設定
 group :production do
   gem 'pg'
+ gem 'rails_12factor'
 end
 
 # Use ActiveModel has_secure_password
