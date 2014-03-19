@@ -54,10 +54,9 @@ class Kintai < ActiveRecord::Base
         sheet[count+3,0] = user_kintai.t_syukkin.strftime("%d日 %H:%M")
         if user_kintai.t_taikin == nil
           f_err = true
-          sheet.row(count+3).set_format(0,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(1,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(2,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-          sheet.row(count+3).set_format(3,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+          for i in 0..3 do
+            sheet.row(count+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+          end
           sheet[count+3,3] = "退勤が押されていないか、未だに働き続けている可能性があります。死にます。"
           next
         end
@@ -74,15 +73,13 @@ class Kintai < ActiveRecord::Base
           end
           if (user_kintai.t_syukkin > chk.t_syukkin && user_kintai.t_syukkin < chk.t_taikin) || (user_kintai.t_taikin > chk.t_syukkin && user_kintai.t_taikin < chk.t_taikin) 
             f_err = true
-            sheet.row(count+3).set_format(0,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(count+3).set_format(1,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(count+3).set_format(2,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(count+3).set_format(3,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+            for i in 0..3 do
+              sheet.row(count+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+            end
             sheet[count+3,3] = "他のレコードと勤怠時間が被っています。" + current_user.name + "さんが分裂した可能性があります。"
-            sheet.row(cnt+3).set_format(0,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(cnt+3).set_format(1,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(cnt+3).set_format(2,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            sheet.row(cnt+3).set_format(3,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+            for i in 0..3 do
+              sheet.row(cnt+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+            end
             sheet[cnt+3,3] = "他のレコードと勤怠時間が被っています。" + current_user.name + "さんが分裂した可能性があります。"
           end
         end
@@ -97,7 +94,6 @@ class Kintai < ActiveRecord::Base
         sheet[@user_kintais.length+5,0] = "※背景が赤いレコードは誤りがあるか、退勤時刻が入力されていません。"
       end
     end
-
 
     #ダウンロードする為にtempファイルを作成
     tmpfile = Tempfile.new ["test", ".xls"]

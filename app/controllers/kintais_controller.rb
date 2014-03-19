@@ -2,6 +2,7 @@ class KintaisController < ApplicationController
   before_action :set_kintai , only: [:show ,:update, :taikin_update, :edit  , :destroy]
   before_action :set_kintais, only: [:index,:edit  , :create                , :destroy, :get_my_record]
   before_action :set_date   , only: [:index,:export]
+  before_action :chk_user   , only: [:show ,:edit  ]
 
   # GET /kintais
   # GET /kintais.json
@@ -49,9 +50,6 @@ class KintaisController < ApplicationController
 
   # GET /kintais/1/edit
   def edit
-    if @kintais == nil
-      return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(勤怠データが無いのに編集画面にアクセスしようとしました。)"
-    end
   end
 
   # POST /kintais
@@ -81,10 +79,7 @@ class KintaisController < ApplicationController
           format.html { redirect_to kintais_url,:notice => "おはようございます。正常に記録されました。" }
           format.json { render action: 'show', status: :created, location: @kintai }
         end
-        rescue => e
-          format.html { redirect_to kintais_url, :alert => "例外が発生しました。記録に失敗しました。"+e.message }
-          format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
-        end
+      end
     end
   end
   # PATCH/PUT /kintais/1
@@ -101,10 +96,7 @@ class KintaisController < ApplicationController
           format.html { redirect_to kintais_url,:notice => "勤怠時間を修正しました。" }
           format.json { head :no_content }
         end
-        rescue => e
-          format.html { redirect_to kintais_url,:alert => "例外が発生しました。修正に失敗しました。"+e.message}
-          format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
-        end
+      end
     end
   end
 
@@ -121,13 +113,10 @@ class KintaisController < ApplicationController
         ActiveRecord::Base.transaction do
           @kintai.update_attributes!(:t_taikin => Time.now)
           current_user.update_attributes!(:f_state => false )
-          format.html { redirect_to kintais_url,:notice => "お疲れ様です。正常に登録されました。"}
+          format.html { redirect_to kintais_url,:notice => "お疲れ様です。正常に登録されました。" }
           format.json { head :no_content }
         end
-        rescue => e
-          format.html { redirect_to kintais_url,:alert => "例外が発生しました。記録に失敗しました。"+e.message}
-          format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
-        end
+      end
     end
   end
 
@@ -146,10 +135,7 @@ class KintaisController < ApplicationController
           format.html { redirect_to kintais_url,:notice => "削除しました。" }
           format.json { head :no_content }
         end
-        rescue => e
-          format.html { redirect_to kintais_url,:alert => "例外が発生しました。削除に失敗しました。"+e.message}
-          format.json { render json: @kintai.errors<<@user.errors, status: :unprocessable_entity }
-        end
+      end
     end
   end
 
@@ -159,38 +145,47 @@ class KintaisController < ApplicationController
       return redirect_to setting_kintais_path, :notice => "ERROR"
     end
 
-    users = User.where( :name => select_params[:name] )
-    users.each do |user|
-      Kintai.where(:user_id => user.id).destroy_all
-      user.destroy
-    end
+    begin
+      ActiveRecord::Base.transaction do
+        users = User.where( :name => select_params[:name] )
+        users.each do |user|
+          Kintai.where(:user_id => user.id).destroy_all
+          user.destroy
+        end
 
-    redirect_to setting_kintais_path, :notice => "削除しました。"
+        redirect_to setting_kintais_path, :notice => "削除しました。"
+      end
+    end
   end
 
   #各テーブルに登録可能最大数以上のデータが登録されてしまっている場合、ユーザーテーブルなら新しいユーザーから、
   #勤怠テーブルならそのユーザーの古い勤怠情報から削除する。
   #adminのみ実行できる。
   def db_correction
-    #ユーザー数が最大数を超えて登録されている場合
-    if User.count > G_MAX_USERS
-      users = User.order("id DESC").limit(User.count - G_MAX_USERS)
-      users.each do |user|
-        Kintai.where(:user_id => user.id).destroy_all 
-      end
-      users.destroy_all #delete_allはlimit scopeで使用できないのでしゃあなし
-    end
 
-    #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合
-    users = User.all
-    users.each do |user|
-      kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
-      if kintais.count - G_MAX_USER_KINTAIS > 0
-        kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all
+    begin
+      ActiveRecord::Base.transaction do
+        #ユーザー数が最大数を超えて登録されている場合
+        if User.count > G_MAX_USERS
+          users = User.order("id DESC").limit(User.count - G_MAX_USERS)
+          users.each do |user|
+            Kintai.where(:user_id => user.id).destroy_all 
+          end
+          users.destroy_all #delete_allはlimit scopeで使用できないのでしゃあなし
+        end
+
+        #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合
+        users = User.all
+        users.each do |user|
+          kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
+          if kintais.count - G_MAX_USER_KINTAIS > 0
+            kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all
+          end
+        end
+
+        redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
       end
     end
-
-    redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
   end
 
   private
@@ -213,6 +208,12 @@ class KintaisController < ApplicationController
 
     def date_params
       params.fetch(:date,{:year => Time.now.year,:month => Time.now.month}).permit(:year, :month) #fetchで、値がない場合のデフォルト値を設定。設定しないとActionController::ParameterMissingになるため。値がある場合はそちらが使用される。
+    end
+
+    def chk_user
+      if current_user.id != @kintai.user_id
+        return redirect_to user_root_path, :alert => "他の社員の勤怠情報にはアクセス出来ません。"
+      end
     end
 
     def select_params

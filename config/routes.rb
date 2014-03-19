@@ -14,6 +14,8 @@ KintaiApp::Application.routes.draw do
   end
   get :index, :to => "kintais#index", :as => "user_root" #はuser_rootが設定されている時ログイン後そこにリダイレクトする。
 
+  match '*not_found' => 'application#render_404',:via => "get"
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
