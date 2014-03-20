@@ -45,14 +45,14 @@
     <div class ="pull-left date-select">
       <%=
         sprintf((
-        select_date @target_date_min,
+        select_date @target_date_max,
         {:use_month_numbers => true,
         :discard_day => true,
         :date_separator => '%s'},
         { :class => "" }
         ).html_safe,'年').html_safe
       %>
-      月の勤怠データを表示しています。
+      月分の勤怠データを表示しています。(締日<%= G_SIMEBI %>日)
     </div>
     <div class="pull-left">
       <%= submit_tag '絞込',:disable_with => "処理中…",:class => "btn btn-primary" %>

@@ -6,7 +6,8 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :validatable
+         :recoverable, :rememberable, :trackable, :validatable,
+         :confirmable #メール認証機能有効化のため追加
 
   #これ以上ユーザー登録できるかどうかチェック(2連続押しで切り抜けた時は知らね)
   def user_check

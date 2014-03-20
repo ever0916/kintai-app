@@ -37,7 +37,7 @@ class Kintai < ActiveRecord::Base
       @chk = @user_kintais = @kintais.where(:t_syukkin => target_date_min..target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
       
       sheet[0,0] = user.name
-      sheet[0,1] = target_date_min.strftime("%Y年%m月分")
+      sheet[0,1] = target_date_max.strftime("%Y年%m月分")
       sheet[2,0] = "出勤時刻"
       sheet[2,1] = "退勤時刻"
       sheet[2,2] = "勤務時間"
@@ -76,11 +76,11 @@ class Kintai < ActiveRecord::Base
             for i in 0..3 do
               sheet.row(count+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
             end
-            sheet[count+3,3] = "他のレコードと勤怠時間が被っています。" + current_user.name + "さんが分裂した可能性があります。"
+            sheet[count+3,3] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
             for i in 0..3 do
               sheet.row(cnt+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
             end
-            sheet[cnt+3,3] = "他のレコードと勤怠時間が被っています。" + current_user.name + "さんが分裂した可能性があります。"
+            sheet[cnt+3,3] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
           end
         end
 

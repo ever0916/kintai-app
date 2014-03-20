@@ -39,13 +39,9 @@ describe User do
       end
     end
 
-    describe "パスワードが8文字以外なら無効であること" do
+    describe "パスワードが8文字未満なら無効であること" do
       it "パスワードが8文字未満なら無効" do
         @user = User.new(:name => "test",:email => "a@ex.jp",:password => "passwor")
-        @user.should be_invalid
-      end
-      it "パスワードが8文字を超える場合無効" do
-        @user = User.new(:name => "test",:email => "a@ex.jp",:password => "passwordd")
         @user.should be_invalid
       end
     end

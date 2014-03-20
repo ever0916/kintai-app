@@ -27,5 +27,8 @@ module KintaiApp
 
     # for bootsrap-sass
     config.assets.precompile += %w(*.png *.jpg *.jpeg *.gif)
+
+    #heroku用
+    config.assets.initialize_on_precompile = false
   end
 end

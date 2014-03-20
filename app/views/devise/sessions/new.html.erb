@@ -7,7 +7,12 @@
       <%= f.email_field :email, :autofocus => true, :class => "form-control imput-sm" %>
     </div>
   </div>
-  <%= f.password_field :password, :class => "hidden", :value => "password" %>
+  <div class="form-group">
+    <%= f.label :password.to_s+"：", :class => "control-label col-xs-2" %>
+    <div class="col-xs-4">
+      <%= f.password_field :password, :autofocus => true, :class => "form-control imput-sm" %>
+    </div>
+  </div>
   <div class="form-group">
     <div class="col-xs-2">
     </div>
