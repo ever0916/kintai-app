@@ -75,11 +75,9 @@ class Kintai < ActiveRecord::Base
             f_err = true
             for i in 0..3 do
               sheet.row(count+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
-            end
-            sheet[count+3,3] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
-            for i in 0..3 do
               sheet.row(cnt+3).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
             end
+            sheet[count+3,3] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
             sheet[cnt+3,3] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
           end
         end
