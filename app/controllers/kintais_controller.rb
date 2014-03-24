@@ -16,7 +16,7 @@ class KintaisController < ApplicationController
   # GET /kintais.json
   def index
     if current_user.f_state == false
-      @kintai  = Kintai.new
+      @kintai = Kintai.new
     else
       @kintai = @kintais.last if @kintais != nil
     end
@@ -64,18 +64,16 @@ class KintaisController < ApplicationController
     @kintai      = Kintai.new(kintai_params)
     @kintai_last = @kintais.last
 
-    begin
-      ActiveRecord::Base.transaction do
-        #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
-        @kintais.reorder(nil).order("t_syukkin ASC").order("id ASC").first.destroy if @kintais.count >= G_MAX_USER_KINTAIS
+    ActiveRecord::Base.transaction do
+      #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
+      @kintais.reorder(nil).order("t_syukkin ASC").order("id ASC").first.destroy if @kintais.count >= G_MAX_USER_KINTAIS
 
-        @kintai.t_syukkin = Time.now
-        @kintai.save!
+      @kintai.t_syukkin = Time.now
+      @kintai.save!
 
-        current_user.update_attributes!(:f_state => !current_user.f_state ) 
+      current_user.update_attributes!(:f_state => !current_user.f_state ) 
 
-        flash[:notice] = "おはようございます。正常に記録されました。"
-      end
+      flash[:notice] = "おはようございます。正常に記録されました。"
     end
 
     respond_with @kintai,:location => kintais_url
@@ -83,26 +81,19 @@ class KintaisController < ApplicationController
   # PATCH/PUT /kintais/1
   # PATCH/PUT /kintais/1.json
   def update
-    begin
-      ActiveRecord::Base.transaction do
-        @kintai.update_attributes!(kintai_params)
-        
-        flash[:notice] = "勤怠時間を修正しました。"
-      end
-    end
+    @kintai.update_attributes!(kintai_params)
+
+    flash[:notice] = "勤怠時間を修正しました。"
 
     respond_with @kintai,:location => kintais_url
   end
 
   def taikin_update
+    ActiveRecord::Base.transaction do
+      @kintai.update_attributes!(:t_taikin => Time.now)
+      current_user.update_attributes!(:f_state => !current_user.f_state )
 
-    begin
-      ActiveRecord::Base.transaction do
-        @kintai.update_attributes!(:t_taikin => Time.now)
-        current_user.update_attributes!(:f_state => false )
-
-        flash[:notice] = "お疲れ様です。正常に登録されました。"
-      end
+      flash[:notice] = "お疲れ様です。正常に登録されました。"
     end
 
     respond_with @kintai,:location => kintais_url
@@ -111,15 +102,13 @@ class KintaisController < ApplicationController
   # DELETE /kintais/1
   # DELETE /kintais/1.json
   def destroy
-    begin
-      ActiveRecord::Base.transaction do
-        #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
-        current_user.update_attributes!(:f_state => false ) if @kintai.id == @kintais.last.id if current_user.f_state == true
-        
-        @kintai.destroy
+    ActiveRecord::Base.transaction do
+      #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
+      current_user.update_attributes!(:f_state => false ) if @kintai.id == @kintais.last.id if current_user.f_state == true
 
-        flash[:notice] = "削除しました。"
-      end
+      @kintai.destroy
+
+      flash[:notice] = "削除しました。"
     end
 
     respond_with @kintai,:location => kintais_url
@@ -127,16 +116,12 @@ class KintaisController < ApplicationController
 
   #対象のユーザーを削除する
   def user_destroy
-    begin
-      ActiveRecord::Base.transaction do
-        users = User.where( :name => select_params[:name] )
-        users.each do |user|
-          Kintai.where(:user_id => user.id).destroy_all
-          user.destroy
-        end
+    ActiveRecord::Base.transaction do
+      user = User.find_by_name(select_params[:name])
+      Kintai.where(:user_id => user.id).destroy_all
+      user.destroy
 
-        redirect_to setting_kintais_path, :notice => "削除しました。"
-      end
+      redirect_to setting_kintais_path, :notice => "削除しました。"
     end
   end
 
@@ -144,16 +129,14 @@ class KintaisController < ApplicationController
   #勤怠テーブルならそのユーザーの古い勤怠情報から削除する。
   #adminのみ実行できる。
   def db_correction
-    begin
-      ActiveRecord::Base.transaction do
-        #ユーザーが最大数を超えて登録されている場合に、新しいユーザーデータから削除する。
-        user_correction
+    ActiveRecord::Base.transaction do
+      #ユーザーが最大数を超えて登録されている場合に、新しいユーザーデータから削除する。
+      user_correction
 
-        #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合に、出勤日の古いレコードから削除する。
-        kintai_correction
+      #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合に、出勤日の古いレコードから削除する。
+      kintai_correction
 
-        redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
-      end
+      redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
     end
   end
 
