@@ -144,24 +144,13 @@ class KintaisController < ApplicationController
   #勤怠テーブルならそのユーザーの古い勤怠情報から削除する。
   #adminのみ実行できる。
   def db_correction
-
     begin
       ActiveRecord::Base.transaction do
-        #ユーザー数が最大数を超えて登録されている場合
-        if User.count > G_MAX_USERS
-          users = User.order("id DESC").limit(User.count - G_MAX_USERS)
-          users.each do |user|
-            Kintai.where(:user_id => user.id).destroy_all 
-          end
-          users.destroy_all #delete_allはlimit scopeで使用できないのでしゃあなし
-        end
+        #ユーザーが最大数を超えて登録されている場合に、新しいユーザーデータから削除する。
+        user_correction
 
-        #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合
-        users = User.all
-        users.each do |user|
-          kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
-          kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all if kintais.count - G_MAX_USER_KINTAIS > 0
-        end
+        #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合に、出勤日の古いレコードから削除する。
+        kintai_correction
 
         redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
       end
@@ -208,6 +197,26 @@ class KintaisController < ApplicationController
 
     def select_params
       params.require(:user).permit(:name)
+    end
+
+    #ユーザーが最大数を超えて登録されている場合に、新しいユーザーデータから削除する。
+    def user_correction
+      return if User.count <= G_MAX_USERS
+
+      users = User.order("id DESC").limit(User.count - G_MAX_USERS)
+      users.each do |user|
+        Kintai.where(:user_id => user.id).destroy_all 
+      end
+      users.destroy_all #delete_allはlimit scopeで使用できないのでしゃあなし
+    end
+
+    #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合に、出勤日の古いレコードから削除する。
+    def kintai_correction
+      users = User.all
+      users.each do |user|
+        kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
+        kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all if kintais.count - G_MAX_USER_KINTAIS > 0
+      end
     end
 
     #データベースに２重登録がされ、登録できる最大行数を超えていないかチェックする。
