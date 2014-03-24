@@ -9,6 +9,7 @@ class KintaisController < ApplicationController
     chk_f_state(false,"不正なアクセスです。(退勤中に退勤しようとしました。出禁←)")
   end
   before_action :chk_user   , only: [:show ,:edit  ]
+  before_action :chk_admin  , only: [:user_destroy,:db_correction]
   respond_to :html, :json, :xls
 
   # GET /kintais
@@ -17,9 +18,7 @@ class KintaisController < ApplicationController
     if current_user.f_state == false
       @kintai  = Kintai.new
     else
-      if @kintais != nil
-        @kintai = @kintais.last
-      end
+      @kintai = @kintais.last if @kintais != nil
     end
 
     #指定した月の勤怠レコードを@kintaisに取得。
@@ -68,9 +67,7 @@ class KintaisController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
-        if @kintais.count >= G_MAX_USER_KINTAIS
-          @kintais.reorder(nil).order("t_syukkin ASC").order("id ASC").first.destroy
-        end
+        @kintais.reorder(nil).order("t_syukkin ASC").order("id ASC").first.destroy if @kintais.count >= G_MAX_USER_KINTAIS
 
         @kintai.t_syukkin = Time.now
         @kintai.save!
@@ -117,9 +114,7 @@ class KintaisController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         if @kintai.id == @kintais.last.id #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
-          if current_user.f_state == true
-            current_user.update_attributes!(:f_state => false )
-          end
+          current_user.update_attributes!(:f_state => false ) if current_user.f_state == true
         end
         @kintai.destroy
 
@@ -132,10 +127,6 @@ class KintaisController < ApplicationController
 
   #対象のユーザーを削除する
   def user_destroy
-    if current_user.f_admin == false
-      return redirect_to setting_kintais_path, :notice => "ERROR"
-    end
-
     begin
       ActiveRecord::Base.transaction do
         users = User.where( :name => select_params[:name] )
@@ -169,9 +160,7 @@ class KintaisController < ApplicationController
         users = User.all
         users.each do |user|
           kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
-          if kintais.count - G_MAX_USER_KINTAIS > 0
-            kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all
-          end
+          kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all if kintais.count - G_MAX_USER_KINTAIS > 0
         end
 
         redirect_to setting_kintais_path, :notice => "データベースを修正しました。"
@@ -207,15 +196,15 @@ class KintaisController < ApplicationController
     end
 
     def chk_f_state(flg,msg)
-      if current_user.f_state == flg
-        return redirect_to kintais_url, :alert => msg
-      end
+      return redirect_to kintais_url, :alert => msg if current_user.f_state == flg
     end
 
     def chk_user
-      if current_user.id != @kintai.user_id
-        return redirect_to user_root_path, :alert => "他の社員の勤怠情報にはアクセス出来ません。"
-      end
+      return redirect_to user_root_path, :alert => "他の社員の勤怠情報にはアクセス出来ません。" if current_user.id != @kintai.user_id
+    end
+
+    def chk_admin
+      return redirect_to setting_kintais_path, :notice => "ERROR" if current_user.f_admin == false
     end
 
     def select_params
@@ -227,21 +216,15 @@ class KintaisController < ApplicationController
     def db_check
       ret = false
 
-      if current_user.f_admin == false
-        return ret
-      end
+      return ret if current_user.f_admin == false
 
       #ユーザー数が超えていないか
-      if User.count > G_MAX_USERS
-        return true
-      end
+      return true if User.count > G_MAX_USERS
 
       #各ユーザーの勤怠テーブルに最大数を超えて登録されていないか
       users = User.all
       users.each do |user|
-        if Kintai.all.where(:user_id => user.id).count - G_MAX_USER_KINTAIS > 0
-          return true
-        end
+        return true if Kintai.all.where(:user_id => user.id).count - G_MAX_USER_KINTAIS > 0
       end
 
       return ret
