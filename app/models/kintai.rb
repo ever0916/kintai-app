@@ -20,9 +20,7 @@ class Kintai < ActiveRecord::Base
   def self.export(target_date_min = nil,target_date_max = nil)
     require 'spreadsheet'
 
-    if target_date_min == nil || target_date_max == nil
-       return
-    end
+    return if target_date_min == nil || target_date_max == nil
 
     @users   = User.all.order("id ASC")
     @kintais = Kintai.all

@@ -178,8 +178,9 @@ class KintaisController < ApplicationController
     end
     def set_date
       if date_params[:month] == 0
-        date = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1)
-        Time.now.day > G_SIMEBI ? @target_date_max = date >> 1 : @target_date_max = date
+        shift_month = 0
+        shift_month += 1 if Time.now.day > G_SIMEBI
+        @target_date_max = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1) >> shift_month
       else
         @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI+1)
       end
