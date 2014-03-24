@@ -1,9 +1,11 @@
 class ApplicationController < ActionController::Base
 
+  #rescue_from Exception, :with => :render_500
   rescue_from ActiveRecord::RecordNotFound,       :with => :render_404
   rescue_from AbstractController::ActionNotFound, :with => :render_404 #rails4から名前変わってる?
   rescue_from ActionController::RoutingError    , :with => :render_404
-  rescue_from Exception, :with => :render_500
+  rescue_from ActiveRecord::RecordInvalid,        :with => :redirect_invalid
+
 
   #ヘルパーメソッドの宣言
   helper_method :get_remainder_users #残りの登録可能ユーザー数を返す
@@ -22,6 +24,10 @@ class ApplicationController < ActionController::Base
 
   def render_404(exception = nil)
     render :template => "/application/errors/err_404", :layout => false, :status => 404
+  end
+
+  def redirect_invalid(exception = nil)
+    redirect_to kintais_url, :alert => exception.message
   end
 
   def render_500(exception = nil)

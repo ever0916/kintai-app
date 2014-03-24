@@ -93,7 +93,7 @@ class KintaisController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         @kintai.update_attributes!(kintai_params)
-
+        
         flash[:notice] = "勤怠時間を修正しました。"
       end
     end

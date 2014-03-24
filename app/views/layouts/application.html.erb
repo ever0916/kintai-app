@@ -19,7 +19,14 @@
     <% if alert %>
       <div class="alert alert-danger">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <%= alert %>
+        <% alert_msgs = alert.split(",") %>
+        <% alert_msgs.each_with_index do |msg,cnt| %>
+          <% if cnt > 1 %>
+            <%= (cnt - 1).to_s + ". " + msg %><br>
+          <% else %>
+            <%= msg %><br>
+          <% end %>
+        <% end %>
       </div>
     <% end %>
 

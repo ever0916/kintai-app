@@ -6,8 +6,9 @@ ja:
 
     attributes:
       kintai:
-        t_syukkin: t_syukkin  #g
-        t_taikin: t_taikin  #g
+        empty_attr: ""
+        t_syukkin: "【出勤時間】"  #g
+        t_taikin: "【退勤時間】"  #g
         user: :activerecord.models.user  #g
 
       user:
