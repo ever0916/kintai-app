@@ -9,6 +9,7 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable,
          :confirmable #メール認証機能有効化のため追加
 
+
   #これ以上ユーザー登録できるかどうかチェック(2連続押しで切り抜けた時は知らね)
   def user_check
     errors.add(:id,"これ以上ユーザー登録出来ません。") if User.get_remainder_users <= 0

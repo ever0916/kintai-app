@@ -2,6 +2,12 @@ class KintaisController < ApplicationController
   before_action :set_kintai , only: [:show ,:update, :taikin_update, :edit  , :destroy]
   before_action :set_kintais, only: [:index,:edit  , :create                , :destroy, :get_my_record]
   before_action :set_date   , only: [:index,:export]
+  before_action only: [:create] do |c|
+    chk_f_state(true,"不正なアクセスです。(勤務中に出勤しようとしました。出禁←)")
+  end
+  before_action only: [:taikin_update] do |c|
+    chk_f_state(false,"不正なアクセスです。(退勤中に退勤しようとしました。出禁←)")
+  end
   before_action :chk_user   , only: [:show ,:edit  ]
   respond_to :html, :json, :xls
 
@@ -59,12 +65,6 @@ class KintaisController < ApplicationController
     @kintai      = Kintai.new(kintai_params)
     @kintai_last = @kintais.last
 
-    if @kintai_last != nil
-      if current_user.f_state == true
-        return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(出勤中に出勤しようとした。本来ありえない動作)"
-      end
-    end
-
     begin
       ActiveRecord::Base.transaction do
         #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
@@ -75,7 +75,7 @@ class KintaisController < ApplicationController
         @kintai.t_syukkin = Time.now
         @kintai.save!
 
-        current_user.update_attributes!(:f_state => true ) 
+        current_user.update_attributes!(:f_state => !current_user.f_state ) 
 
         flash[:notice] = "おはようございます。正常に記録されました。"
       end
@@ -86,10 +86,6 @@ class KintaisController < ApplicationController
   # PATCH/PUT /kintais/1
   # PATCH/PUT /kintais/1.json
   def update
-    if @kintai == nil
-      return redirect_to @kintai, :notice => "不正なアクセスです。出禁←(対象の勤怠データが無いのに退勤データをアップデートしようとしました。)"
-    end
-
     begin
       ActiveRecord::Base.transaction do
         @kintai.update_attributes!(kintai_params)
@@ -102,12 +98,6 @@ class KintaisController < ApplicationController
   end
 
   def taikin_update
-    if @kintai == nil
-      return redirect_to @kintai, :alert => "不正なアクセスです。出禁←(対象の勤怠データが無いのに退勤しようとしました。)"
-    end
-    if current_user.f_state == false
-      return redirect_to kintais_url, :alert => "不正なアクセスです。出禁←(退勤中に退勤しようとした。本来ありえない動作)"
-    end
 
     begin
       ActiveRecord::Base.transaction do
@@ -199,11 +189,11 @@ class KintaisController < ApplicationController
     end
     def set_date
       if date_params[:month] == 0
-        Time.now.day > G_SIMEBI ? @target_date_max = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1) >> 1 : @target_date_max = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1)
+        date = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1)
+        Time.now.day > G_SIMEBI ? @target_date_max = date >> 1 : @target_date_max = date
       else
         @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI+1)
       end
-     # date_params[:year] == nil ? @target_date_max = Date.new(Time.now.year,Time.now.month,Time.now.day) : @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI)
       @target_date_min = @target_date_max << 1
     end
 
@@ -214,6 +204,12 @@ class KintaisController < ApplicationController
 
     def date_params
       params.fetch(:date,{:year => Time.now.year,:month => 0}).permit(:year, :month) #fetchで、値がない場合のデフォルト値を設定。設定しないとActionController::ParameterMissingになるため。値がある場合はそちらが使用される。
+    end
+
+    def chk_f_state(flg,msg)
+      if current_user.f_state == flg
+        return redirect_to kintais_url, :alert => msg
+      end
     end
 
     def chk_user
