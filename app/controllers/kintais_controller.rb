@@ -113,9 +113,9 @@ class KintaisController < ApplicationController
   def destroy
     begin
       ActiveRecord::Base.transaction do
-        if @kintai.id == @kintais.last.id #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
-          current_user.update_attributes!(:f_state => false ) if current_user.f_state == true
-        end
+        #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
+        current_user.update_attributes!(:f_state => false ) if @kintai.id == @kintais.last.id if current_user.f_state == true
+        
         @kintai.destroy
 
         flash[:notice] = "削除しました。"
