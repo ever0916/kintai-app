@@ -49,16 +49,14 @@ class Kintai < ActiveRecord::Base
       @f_err  = false
       @user_kintais.each_with_index do |user_kintai,count|
         #値の設定
-        @sheet[count+3,0] = user_kintai.t_syukkin.strftime("%d日 %H:%M")
+        @sheet[count+3,0] = user_kintai.t_syukkin.strftime("%m月%d日 %H:%M")
         if user_kintai.t_taikin == nil
           self.write_err_to_sheet count+3,"退勤が押されていないか、未だに働き続けている可能性があります。死にます。"
           next
+        else
+          @sheet[count+3,1] = user_kintai.t_taikin.strftime("%m月%d日 %H:%M")
         end
-
-        @sheet[count+3,1] = user_kintai.t_taikin.strftime("%m月%d日 %H:%M")
-
-        rz = (user_kintai.t_taikin - user_kintai.t_syukkin).divmod(3600)
-        @sheet[count+3,2] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
+        self.write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin,count+3,2)
 
         chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => "")
         chk.each_with_index do |chk,cnt|
@@ -71,8 +69,7 @@ class Kintai < ActiveRecord::Base
         goukei += user_kintai.t_taikin - user_kintai.t_syukkin;
       end
       if @f_err == false
-        rz = goukei.divmod(3600)
-        @sheet[@user_kintais.length+3,2] = "計#{rz[0]}時間#{rz[1].to_i / 60}分"
+        self.write_time_hm_to_sheet(goukei,@user_kintais.length+3,2)
       else
         @sheet.merge_cells(@user_kintais.length+5,0,@user_kintais.length+5,3)#セルの結合。引き数はstart_row,start_col,end_row,end_col
         @sheet[@user_kintais.length+5,0] = "※背景が赤いレコードは誤りがあるか、退勤時刻が入力されていません。"
@@ -88,8 +85,15 @@ class Kintai < ActiveRecord::Base
     return tmpfile
   end
 
+  #エクセルシートの対象行に時間を何時間、何分の形式で出力する。
+  #sec=秒数,h=行,w=列
+  def self.write_time_hm_to_sheet(sec,h,w)
+    rz = sec.divmod(3600)
+    @sheet[h,w] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
+  end
+
   #エクセルシートの対象行の背景を赤くし、その行の３列目にerr_msgを出力する。
-  #@f_errがtruenになる。
+  #@f_errがtrueになる。
   def self.write_err_to_sheet(count,err_msg)
     @f_err = true
     for i in 0..3 do
