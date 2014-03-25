@@ -186,7 +186,7 @@ class KintaisController < ApplicationController
     def kintai_correction
       users = User.all
       users.each do |user|
-        kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC").order("id ASC")
+        kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC,id ASC")
         kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all if kintais.count - G_MAX_USER_KINTAIS > 0
       end
     end
