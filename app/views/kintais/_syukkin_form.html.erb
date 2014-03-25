@@ -1,21 +1,7 @@
-<%= form_for(@kintai,:html => { :class => "" } ) do |f| %>
-  <% if @kintai.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@kintai.errors.count, "error") %> prohibited this kintai from being saved:</h2>
-
-      <ul>
-      <% @kintai.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <%= f.number_field :user_id,:value => current_user.id,:class => "hidden" %>
-
+<%= form_tag(kintais_path,:class => "" ) do |f| %>
 
   <div>
-    <%= f.submit '出勤',:disable_with => "処理中…",:class => "btn btn-warning" %>
+    <%= submit_tag '出勤',:disable_with => "処理中…",:class => "btn btn-warning" %>
   </div>
 
 

@@ -15,9 +15,7 @@ class KintaisController < ApplicationController
   # GET /kintais
   # GET /kintais.json
   def index
-    if current_user.f_state == false
-      @kintai = Kintai.new
-    else
+    if current_user.f_state == true
       @kintai = @kintais.last if @kintais != nil
     end
 
@@ -54,7 +52,6 @@ class KintaisController < ApplicationController
   # POST /kintais.json
   def create
     @kintai      = Kintai.new(kintai_params)
-    @kintai.t_syukkin = Time.now
 
     ActiveRecord::Base.transaction do
       #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
@@ -144,7 +141,7 @@ class KintaisController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def kintai_params
-      params.require(:kintai).permit(:user_id, :t_syukkin, :t_taikin)
+      params.fetch(Kintai,{:user_id => current_user.id,:t_syukkin => Time.now}).permit(:user_id, :t_syukkin, :t_taikin)
     end
 
     def date_params
