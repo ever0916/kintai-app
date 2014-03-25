@@ -40,7 +40,7 @@ class KintaisController < ApplicationController
         #値の設定
         write_date_to_sheet(user_kintai.t_syukkin,count+3,0)
         write_date_to_sheet(user_kintai.t_taikin ,count+3,1)
-        write_time_hm_sa_to_sheet(user_kintai.t_taikin,user_kintai.t_syukkin,count+3,2)
+        write_time_hm_to_sheet(user_kintai.t_taikin,user_kintai.t_syukkin,count+3,2)
       end
 
       #エラーと合計勤務時間の出力
@@ -48,7 +48,7 @@ class KintaisController < ApplicationController
       ary.each_with_index do |msg,count|
         if count + 1 == ary.count
           #合計時間の出力
-          write_time_hm_to_sheet(msg,@user_kintais.length+3,2)
+          write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2)
         else
           #エラーの出力
           write_err_to_sheet(count + 3,msg)
@@ -252,18 +252,10 @@ class KintaisController < ApplicationController
 
     #エクセルシートの対象行にsec1-sec2の差を何時間、何分の形式で出力する。
     #sec1=秒数,sec2,秒数,h=行,w=列
-    def write_time_hm_sa_to_sheet(sec1,sec2,h,w)
+    def write_time_hm_to_sheet(sec1,sec2,h,w)
       return if sec1 == nil
 
-      rz = (sec1.to_i - sec2.to_i).divmod(3600)
-      @sheet[h,w] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
-    end
-
-    #エクセルシートの対象行にsecを何時間、何分の形式で出力する。
-    def write_time_hm_to_sheet(sec,h,w)
-      return if sec == nil
-
-      rz = sec.divmod(3600)
+      rz = (sec1 - sec2).divmod(3600)
       @sheet[h,w] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
     end
 
