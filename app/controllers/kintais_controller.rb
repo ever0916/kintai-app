@@ -26,6 +26,8 @@ class KintaisController < ApplicationController
   end
 
   def export
+    require 'spreadsheet'
+
     tmpfile = Kintai.export(@target_date_min,@target_date_max)
 
     respond_to do |format|

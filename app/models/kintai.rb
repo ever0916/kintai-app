@@ -18,8 +18,6 @@ class Kintai < ActiveRecord::Base
   end
 
   def self.export(target_date_min = nil,target_date_max = nil)
-    require 'spreadsheet'
-
     #テンプレートファイルの生成
     @book = Spreadsheet::Workbook.new
     User.all.order("id ASC").each do |user|
