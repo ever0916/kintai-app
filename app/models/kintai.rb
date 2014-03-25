@@ -40,7 +40,7 @@ class Kintai < ActiveRecord::Base
         end
         self.write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin,count+3,2)
 
-        chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => "")
+        chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => nil)
         chk.each_with_index do |chk,cnt|
           if (user_kintai.t_syukkin > chk.t_syukkin && user_kintai.t_syukkin < chk.t_taikin) || (user_kintai.t_taikin > chk.t_syukkin && user_kintai.t_taikin < chk.t_taikin) 
             self.write_err_to_sheet count+3,"他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
