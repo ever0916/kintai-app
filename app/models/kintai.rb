@@ -38,7 +38,7 @@ class Kintai < ActiveRecord::Base
         else
           @sheet[count+3,1] = user_kintai.t_taikin.strftime("%m月%d日 %H:%M")
         end
-        self.write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin,count+3,2)
+        self.write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin - 3600,count+3,2)
 
         chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => nil)
         chk.each_with_index do |chk,cnt|
@@ -48,7 +48,7 @@ class Kintai < ActiveRecord::Base
           end
         end
 
-        goukei += user_kintai.t_taikin - user_kintai.t_syukkin;
+        goukei += user_kintai.t_taikin - user_kintai.t_syukkin - 3600
       end
       if @f_err == false
         self.write_time_hm_to_sheet(goukei,@user_kintais.length+3,2)
