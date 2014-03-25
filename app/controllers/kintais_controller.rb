@@ -46,12 +46,7 @@ class KintaisController < ApplicationController
       #エラーと合計勤務時間の出力
       ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
       ary.each_with_index do |msg,count|
-        if count + 1 == ary.count
-          #合計時間の出力
-          write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2)
-        else
-          #エラーの出力
-          write_err_to_sheet(count + 3,msg)
+        count + 1 == ary.count ? write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2) : write_err_to_sheet(count + 3,msg)
         end
       end
     end
@@ -59,9 +54,8 @@ class KintaisController < ApplicationController
     #ダウンロードする為にtempファイルを作成
     tmpfile = Tempfile.new ["test", ".xls"]
     @book.write tmpfile
-
     tmpfile.open # reopen
-
+    
     respond_to do |format|
       format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
     end
