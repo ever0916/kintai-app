@@ -54,7 +54,6 @@ class KintaisController < ApplicationController
   # POST /kintais.json
   def create
     @kintai      = Kintai.new(kintai_params)
-    @kintai_last = @kintais.last
 
     ActiveRecord::Base.transaction do
       #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
