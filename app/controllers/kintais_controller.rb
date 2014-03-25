@@ -28,25 +28,20 @@ class KintaisController < ApplicationController
   def export
     #エクセルbookの作成
     @book = Spreadsheet::Workbook.new
+    
+    #勤怠エクセルの作成
+    create_kintai_xls
 
-    User.all.order("id ASC").each do |user|
-      #エクセルシート空テンプレート作成
-      @sheet = create_tmp_sheet(user.name)
+    #ダウンロードする為にtempファイルを作成
+    tmpfile = Tempfile.new ["test", ".xls"]
+    @book.write tmpfile
+    tmpfile.open # reopen
 
-      #指定した月の勤怠レコードを@kintaisに取得。
-      @user_kintais = Kintai.all.where(:t_syukkin => @target_date_min..@target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
-
-      #ユーザーのレコードをシートに出力する。
-      write_user_record
-
-      #エラーと合計勤務時間の出力
-      ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
-      ary.each_with_index do |msg,count|
-        count + 1 == ary.count ? write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2) : write_err_to_sheet(count + 3,msg)
-      end
+    respond_to do |format|
+      format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
     end
 
-    create_tmp
+    tmpfile.close(true)
   end
 
   # GET /kintais/1
@@ -259,16 +254,23 @@ class KintaisController < ApplicationController
       @sheet[count,3] = err_msg
     end
 
-    #ダウンロードする為にtempファイルを作成
-    def create_tmp
-      tmpfile = Tempfile.new ["test", ".xls"]
-      @book.write tmpfile
-      tmpfile.open # reopen
+    #勤怠エクセルの作成
+    def create_kintai_xls
+      User.all.order("id ASC").each do |user|
+        #エクセルシート空テンプレート作成
+        @sheet = create_tmp_sheet(user.name)
 
-      respond_to do |format|
-        format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
+        #指定した月の勤怠レコードを@kintaisに取得。
+        @user_kintais = Kintai.all.where(:t_syukkin => @target_date_min..@target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
+
+        #ユーザーのレコードをシートに出力する。
+        write_user_record
+
+        #エラーと合計勤務時間の出力
+        ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
+        ary.each_with_index do |msg,count|
+          count + 1 == ary.count ? write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2) : write_err_to_sheet(count + 3,msg)
+        end
       end
-
-      tmpfile.close(true)
     end
 end
