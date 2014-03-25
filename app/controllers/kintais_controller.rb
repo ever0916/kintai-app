@@ -138,11 +138,8 @@ class KintaisController < ApplicationController
       @kintais = Kintai.where(:user_id => current_user.id).order("id ASC")
     end
     def set_date
-      if date_params[:month] == 0
-        Time.now.day > G_SIMEBI ? @target_date_max = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1) >> 1 : @target_date_max = Date.new(Time.now.year,Time.now.month,G_SIMEBI+1)
-      else
-        @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI+1)
-      end
+      @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI+1)
+
       @target_date_min = @target_date_max << 1
     end
 
@@ -152,7 +149,7 @@ class KintaisController < ApplicationController
     end
 
     def date_params
-      params.fetch(:date,{:year => Time.now.year,:month => 0}).permit(:year, :month) #fetchで、値がない場合のデフォルト値を設定。設定しないとActionController::ParameterMissingになるため。値がある場合はそちらが使用される。
+      params.fetch(:date,{:year => Time.now.year,:month => Time.now.day > G_SIMEBI ? (Time.now.month % 12) + 1 : Time.now.month }).permit(:year, :month) #fetchで、値がない場合のデフォルト値を設定。設定しないとActionController::ParameterMissingになるため。値がある場合はそちらが使用される。
     end
 
     def chk_f_state(flg,msg)
