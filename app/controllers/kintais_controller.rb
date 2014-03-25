@@ -36,12 +36,8 @@ class KintaisController < ApplicationController
       #指定した月の勤怠レコードを@kintaisに取得。
       @user_kintais = Kintai.all.where(:t_syukkin => @target_date_min..@target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
 
-      @user_kintais.each_with_index do |user_kintai,count|
-        #値の設定
-        write_date_to_sheet(user_kintai.t_syukkin,count+3,0)
-        write_date_to_sheet(user_kintai.t_taikin ,count+3,1)
-        write_time_hm_to_sheet(user_kintai.t_taikin,user_kintai.t_syukkin,count+3,2)
-      end
+      #ユーザーのレコードをシートに出力する。
+      write_user_record
 
       #エラーと合計勤務時間の出力
       ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
@@ -235,6 +231,16 @@ class KintaisController < ApplicationController
       sheet.column(3).width = 100
 
       return sheet
+    end
+
+    #ユーザーのレコードをシートに出力する。
+    def write_user_record
+      @user_kintais.each_with_index do |user_kintai,count|
+        #値の設定
+        write_date_to_sheet(user_kintai.t_syukkin,count+3,0)
+        write_date_to_sheet(user_kintai.t_taikin ,count+3,1)
+        write_time_hm_to_sheet(user_kintai.t_taikin,user_kintai.t_syukkin,count+3,2)
+      end
     end
 
     #エクセルシートの対象行に勤怠時間を出力する。
