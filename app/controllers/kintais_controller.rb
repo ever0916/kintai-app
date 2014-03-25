@@ -130,7 +130,6 @@ class KintaisController < ApplicationController
     end
     def set_date
       @target_date_max = Date.new(date_params[:year].to_i,date_params[:month].to_i,G_SIMEBI+1)
-
       @target_date_min = @target_date_max << 1
     end
 
@@ -152,7 +151,7 @@ class KintaisController < ApplicationController
     end
 
     def chk_admin
-      return redirect_to setting_kintais_path, :notice => "ERROR" if current_user.f_admin == false
+      #return redirect_to setting_kintais_path, :notice => "ERROR" if current_user.f_admin == false
     end
 
     def select_params
@@ -161,9 +160,9 @@ class KintaisController < ApplicationController
 
     #ユーザーが最大数を超えて登録されている場合に、新しいユーザーデータから削除する。
     def user_correction
-      return if User.count <= G_MAX_USERS
+      return if (cnt = User.count - G_MAX_USERS) <= 0
 
-      users = User.order("id DESC").limit(User.count - G_MAX_USERS)
+      users = User.order("id DESC").limit(cnt)
       users.each do |user|
         Kintai.where(:user_id => user.id).destroy_all 
       end
