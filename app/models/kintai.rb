@@ -8,7 +8,6 @@ class Kintai < ActiveRecord::Base
   #出勤時間と退勤時間が逆転していないかを検証する。
   #退勤時間がnilの場合は検証しない
   def kintai_check
-    p self.t_taikin.to_s + "    " + self.t_syukkin.to_s
     errors.add(:empty_attr,"【出勤時間】と【退勤時間】が逆転しました。タイムリープしてしまった可能性がありますね。") if self.t_taikin < self.t_syukkin
   end
 
@@ -18,36 +17,89 @@ class Kintai < ActiveRecord::Base
     errors.add(:t_taikin ,"を現在時刻より後に設定することは出来ません。") if self.t_taikin  > Time.now unless self.t_taikin.nil?
   end
 
-  #対象のuser_idの社員の、その月の勤怠情報にエラーが無いか調べる。[勤怠情報+1]分の長さの配列を返し、エラーがある場合はエラーメッセージが格納される。
-  #最後の行には合計勤務時間が秒数で格納される。
-  def self.chk_export(user_id,target_date_min,target_date_max)
-    #指定した月の勤怠レコードを@user_kintaisに取得。
-    @user_kintais = Kintai.all.where(:t_syukkin => target_date_min..target_date_max ).where(:user_id => user_id).order("t_syukkin ASC")
+  def self.export(target_date_min = nil,target_date_max = nil)
+    require 'spreadsheet'
 
-    ret_ary = Array.new(@user_kintais.count + 1)
+    return if target_date_min == nil || target_date_max == nil
 
-    goukei = 0
-    @user_kintais.each_with_index do |user_kintai,count|
-      if user_kintai.t_taikin == nil
-        ret_ary[count] = "退勤が押されていないか、未だに働き続けている可能性があります。死にます。"
-        next
+    @users   = User.all.order("id ASC")
+    @kintais = Kintai.all
+
+    #テンプレートファイルの生成
+    book = Spreadsheet::Workbook.new
+    @users.each do |user|
+      #シートの生成。名前を付ける
+      @sheet = book.create_worksheet(:name => user.name)
+
+      #指定した月の勤怠レコードを@kintaisに取得。
+      @user_kintais = @kintais.where(:t_syukkin => target_date_min..target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
+      
+      @sheet[0,0] = user.name
+      @sheet[0,1] = target_date_max.strftime("%Y年%m月分")
+      @sheet[2,0] = "出勤時刻"
+      @sheet[2,1] = "退勤時刻"
+      @sheet[2,2] = "勤務時間"
+
+      for i in 0..2 do
+        @sheet.column(i).width = 15 # カラム幅設定
       end
+      @sheet.column(3).width = 100
 
-      chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => "")
-      chk.each_with_index do |chk,cnt|
-        if (user_kintai.t_syukkin > chk.t_syukkin && user_kintai.t_syukkin < chk.t_taikin) || (user_kintai.t_taikin > chk.t_syukkin && user_kintai.t_taikin < chk.t_taikin) 
-          ret_ary[cnt]   = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
-          ret_ary[count] = "他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
+      goukei = 0
+      @f_err  = false
+      @user_kintais.each_with_index do |user_kintai,count|
+        #値の設定
+        @sheet[count+3,0] = user_kintai.t_syukkin.strftime("%m月%d日 %H:%M")
+        if user_kintai.t_taikin == nil
+          self.write_err_to_sheet count+3,"退勤が押されていないか、未だに働き続けている可能性があります。死にます。"
+          next
+        else
+          @sheet[count+3,1] = user_kintai.t_taikin.strftime("%m月%d日 %H:%M")
         end
-      end
+        self.write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin,count+3,2)
 
-      goukei += (user_kintai.t_taikin - user_kintai.t_syukkin)
+        chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => "")
+        chk.each_with_index do |chk,cnt|
+          if (user_kintai.t_syukkin > chk.t_syukkin && user_kintai.t_syukkin < chk.t_taikin) || (user_kintai.t_taikin > chk.t_syukkin && user_kintai.t_taikin < chk.t_taikin) 
+            self.write_err_to_sheet count+3,"他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
+            self.write_err_to_sheet cnt+3  ,"他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
+          end
+        end
+
+        goukei += user_kintai.t_taikin - user_kintai.t_syukkin;
+      end
+      if @f_err == false
+        self.write_time_hm_to_sheet(goukei,@user_kintais.length+3,2)
+      else
+        @sheet.merge_cells(@user_kintais.length+5,0,@user_kintais.length+5,3)#セルの結合。引き数はstart_row,start_col,end_row,end_col
+        @sheet[@user_kintais.length+5,0] = "※背景が赤いレコードは誤りがあるか、退勤時刻が入力されていません。"
+      end
     end
 
-    ret_ary[ret_ary.count - 1] = goukei
+    #ダウンロードする為にtempファイルを作成
+    tmpfile = Tempfile.new ["test", ".xls"]
+    book.write tmpfile
 
-    return ret_ary
+    tmpfile.open # reopen
+
+    return tmpfile
   end
 
+  #エクセルシートの対象行に時間を何時間、何分の形式で出力する。
+  #sec=秒数,h=行,w=列
+  def self.write_time_hm_to_sheet(sec,h,w)
+    rz = sec.divmod(3600)
+    @sheet[h,w] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
+  end
+
+  #エクセルシートの対象行の背景を赤くし、その行の３列目にerr_msgを出力する。
+  #@f_errがtrueになる。
+  def self.write_err_to_sheet(count,err_msg)
+    @f_err = true
+    for i in 0..3 do
+      @sheet.row(count).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+    end
+    @sheet[count,3] = err_msg
+  end
 end
 
