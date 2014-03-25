@@ -184,8 +184,7 @@ class KintaisController < ApplicationController
       return true if User.count > G_MAX_USERS
 
       #各ユーザーの勤怠テーブルに最大数を超えて登録されていないか
-      users = User.all
-      users.each do |user|
+      User.all.each do |user|
         return true if Kintai.all.where(:user_id => user.id).count - G_MAX_USER_KINTAIS > 0
       end
 
