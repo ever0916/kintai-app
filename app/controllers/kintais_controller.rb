@@ -26,7 +26,6 @@ class KintaisController < ApplicationController
   def setting
     @target_date_min = Date.new(Time.now.year,Time.now.month,1)
 
-    @f_db_err = false
     @f_db_err = db_check #データベースの修正が必要ならtrueが入る
   end
 
@@ -67,9 +66,7 @@ class KintaisController < ApplicationController
   # PATCH/PUT /kintais/1.json
   def update
     @kintai.update_attributes!(kintai_params)
-
     flash[:notice] = "勤怠時間を修正しました。"
-
     respond_with @kintai,:location => kintais_url
   end
 
@@ -77,10 +74,8 @@ class KintaisController < ApplicationController
     ActiveRecord::Base.transaction do
       @kintai.update_attributes!(:t_taikin => Time.now)
       current_user.update_attributes!(:f_state => !current_user.f_state )
-
-      flash[:notice] = "お疲れ様です。正常に登録されました。"
     end
-
+    flash[:notice] = "お疲れ様です。正常に登録されました。"
     respond_with @kintai,:location => kintais_url
   end
 
@@ -90,9 +85,7 @@ class KintaisController < ApplicationController
     ActiveRecord::Base.transaction do
       #最後のレコードを削除する場合、ユーザーが出勤中であれば勤務外に戻す。
       current_user.update_attributes!(:f_state => false ) if @kintai.id == @kintais.last.id if current_user.f_state == true
-
       @kintai.destroy
-
       flash[:notice] = "削除しました。"
     end
 
