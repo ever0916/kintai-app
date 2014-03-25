@@ -47,7 +47,6 @@ class KintaisController < ApplicationController
       ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
       ary.each_with_index do |msg,count|
         count + 1 == ary.count ? write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2) : write_err_to_sheet(count + 3,msg)
-        end
       end
     end
 
@@ -55,7 +54,7 @@ class KintaisController < ApplicationController
     tmpfile = Tempfile.new ["test", ".xls"]
     @book.write tmpfile
     tmpfile.open # reopen
-    
+
     respond_to do |format|
       format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
     end
