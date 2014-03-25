@@ -28,7 +28,7 @@ class KintaisController < ApplicationController
   def export
     #エクセルbookの作成
     @book = Spreadsheet::Workbook.new
-    
+
     User.all.order("id ASC").each do |user|
       #エクセルシート空テンプレート作成
       @sheet = create_tmp_sheet(user.name)
@@ -46,16 +46,7 @@ class KintaisController < ApplicationController
       end
     end
 
-    #ダウンロードする為にtempファイルを作成
-    tmpfile = Tempfile.new ["test", ".xls"]
-    @book.write tmpfile
-    tmpfile.open # reopen
-
-    respond_to do |format|
-      format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
-    end
-
-    tmpfile.close(true)
+    create_tmp
   end
 
   # GET /kintais/1
@@ -266,5 +257,18 @@ class KintaisController < ApplicationController
         @sheet.row(count).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
       end
       @sheet[count,3] = err_msg
+    end
+
+    #ダウンロードする為にtempファイルを作成
+    def create_tmp
+      tmpfile = Tempfile.new ["test", ".xls"]
+      @book.write tmpfile
+      tmpfile.open # reopen
+
+      respond_to do |format|
+        format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
+      end
+
+      tmpfile.close(true)
     end
 end
