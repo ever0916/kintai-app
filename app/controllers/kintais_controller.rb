@@ -26,7 +26,52 @@ class KintaisController < ApplicationController
   end
 
   def export
-    tmpfile = Kintai.export(@target_date_min,@target_date_max)
+    #エクセルbookの作成
+    @book = Spreadsheet::Workbook.new
+    
+    User.all.order("id ASC").each do |user|
+      #指定した月の勤怠レコードを@kintaisに取得。
+      @user_kintais = Kintai.all.where(:t_syukkin => @target_date_min..@target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
+
+      #エクセルシート空テンプレート作成
+      @sheet = create_tmp_sheet(user.name)
+
+      goukei = 0
+      @f_err  = false
+      @user_kintais.each_with_index do |user_kintai,count|
+        #値の設定
+        @sheet[count+3,0] = user_kintai.t_syukkin.strftime("%m月%d日 %H:%M")
+        if user_kintai.t_taikin == nil
+          write_err_to_sheet count+3,"退勤が押されていないか、未だに働き続けている可能性があります。死にます。"
+          next
+        else
+          @sheet[count+3,1] = user_kintai.t_taikin.strftime("%m月%d日 %H:%M")
+        end
+        write_time_hm_to_sheet(user_kintai.t_taikin - user_kintai.t_syukkin,count+3,2)
+
+        chk = @user_kintais.where.not(:id => user_kintai.id ).where.not(:t_taikin => "")
+        chk.each_with_index do |chk,cnt|
+          if (user_kintai.t_syukkin > chk.t_syukkin && user_kintai.t_syukkin < chk.t_taikin) || (user_kintai.t_taikin > chk.t_syukkin && user_kintai.t_taikin < chk.t_taikin) 
+            write_err_to_sheet count+3,"他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
+            write_err_to_sheet cnt+3  ,"他のレコードと勤怠時間が被っています。本人が分裂した可能性があります。"
+          end
+        end
+
+        goukei += user_kintai.t_taikin - user_kintai.t_syukkin;
+      end
+      if @f_err == false
+        write_time_hm_to_sheet(goukei,@user_kintais.length+3,2)
+      else
+        @sheet.merge_cells(@user_kintais.length+5,0,@user_kintais.length+5,3)#セルの結合。引き数はstart_row,start_col,end_row,end_col
+        @sheet[@user_kintais.length+5,0] = "※背景が赤いレコードは誤りがあるか、退勤時刻が入力されていません。"
+      end
+    end
+
+    #ダウンロードする為にtempファイルを作成
+    tmpfile = Tempfile.new ["test", ".xls"]
+    @book.write tmpfile
+
+    tmpfile.open # reopen
 
     respond_to do |format|
       format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
@@ -52,7 +97,7 @@ class KintaisController < ApplicationController
   # POST /kintais
   # POST /kintais.json
   def create
-    @kintai      = Kintai.new(kintai_params)
+    @kintai      = Kintai.new(:user_id => current_user.id,:t_syukkin => Time.now)
 
     ActiveRecord::Base.transaction do
       #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
@@ -135,7 +180,7 @@ class KintaisController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def kintai_params
-      params.fetch(Kintai,{:user_id => current_user.id,:t_syukkin => Time.now}).permit(:user_id, :t_syukkin, :t_taikin)
+      params.require(:kintai).permit(:user_id, :t_syukkin, :t_taikin)
     end
 
     def date_params
@@ -192,5 +237,40 @@ class KintaisController < ApplicationController
       end
 
       return false
+    end
+
+    #エクセルシート空テンプレート作成
+    def create_tmp_sheet(str_name)
+      #シートの生成。名前を付ける
+      sheet = @book.create_worksheet(:name => str_name)
+      sheet[0,0] = str_name
+      sheet[0,1] = @target_date_max.strftime("%Y年%m月分")
+      sheet[2,0] = "出勤時刻"
+      sheet[2,1] = "退勤時刻"
+      sheet[2,2] = "勤務時間"
+
+      for i in 0..2 do
+        sheet.column(i).width = 15 # カラム幅設定
+      end
+      sheet.column(3).width = 100
+
+      return sheet
+    end
+
+    #エクセルシートの対象行に時間を何時間、何分の形式で出力する。
+    #sec=秒数,h=行,w=列
+    def write_time_hm_to_sheet(sec,h,w)
+      rz = sec.divmod(3600)
+      @sheet[h,w] = "#{rz[0]}時間#{rz[1].to_i / 60}分"
+    end
+
+    #エクセルシートの対象行の背景を赤くし、その行の３列目にerr_msgを出力する。
+    #@f_errがtrueになる。
+    def write_err_to_sheet(count,err_msg)
+      @f_err = true
+      for i in 0..3 do
+        @sheet.row(count).set_format(i,Spreadsheet::Format.new(:pattern => 1,:pattern_fg_color => :red))
+      end
+      @sheet[count,3] = err_msg
     end
 end
