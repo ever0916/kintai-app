@@ -268,9 +268,10 @@ class KintaisController < ApplicationController
 
         #エラーと合計勤務時間の出力
         ary = @user_kintais.chk_export(user.id,@target_date_min,@target_date_max)
-        ary.each_with_index do |msg,count|
-          count + 1 == ary.count ? write_time_hm_to_sheet(msg,0,@user_kintais.length+3,2) : write_err_to_sheet(count + 3,msg)
+        for i in 0..ary.count-1 do
+          write_err_to_sheet(i + 3,ary[i])
         end
+        write_time_hm_to_sheet(ary[ary.count-1],0,@user_kintais.length+3,2) 
       end
     end
 end
