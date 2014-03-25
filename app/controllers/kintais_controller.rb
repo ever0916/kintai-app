@@ -1,7 +1,7 @@
 class KintaisController < ApplicationController
   before_action :set_kintai , only: [:show ,:update, :taikin_update, :edit  , :destroy]
   before_action :set_kintais, only: [:index,:edit  , :create                , :destroy, :get_my_record]
-  before_action :set_date   , only: [:index,:export]
+  before_action :set_date   , only: [:index,:export,:setting]
   before_action only: [:create] do |c|
     chk_f_state(true,"不正なアクセスです。(勤務中に出勤しようとしました。出禁←)")
   end
@@ -22,13 +22,17 @@ class KintaisController < ApplicationController
   end
 
   def setting
-    @target_date_min = Date.new(Time.now.year,Time.now.month,1)
-
     @f_db_err = db_check #データベースの修正が必要ならtrueが入る
   end
 
   def export
-    Kintai.export(@target_date_min,@target_date_max)
+    tmpfile = Kintai.export(@target_date_min,@target_date_max)
+
+    respond_to do |format|
+      format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
+    end
+
+    tmpfile.close(true)
   end
 
   # GET /kintais/1

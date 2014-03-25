@@ -6,7 +6,7 @@
     <div class ="pull-left date-select">
       <%=
         sprintf((
-        select_date @target_date_min << 1,
+        select_date @target_date_min,
         {:use_month_numbers => true,
         :discard_day => true,
         :date_separator => '%s'},
