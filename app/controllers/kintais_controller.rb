@@ -96,9 +96,9 @@ class KintaisController < ApplicationController
       user = User.find_by_name(select_params[:name])
       Kintai.where(:user_id => user.id).destroy_all
       user.destroy
-
-      redirect_to setting_kintais_path, :notice => "削除しました。"
     end
+
+    redirect_to setting_kintais_path, :notice => "削除しました。"
   end
 
   #各テーブルに登録可能最大数以上のデータが登録されてしまっている場合、ユーザーテーブルなら新しいユーザーから、
@@ -168,10 +168,10 @@ class KintaisController < ApplicationController
 
     #各ユーザーの勤怠テーブルに最大数を超えて登録されている場合に、出勤日の古いレコードから削除する。
     def kintai_correction
-      users = User.all
-      users.each do |user|
+      User.all.each do |user|
         kintais = Kintai.where(:user_id => user.id).order("t_syukkin ASC,id ASC")
-        kintais.limit(Kintai.count - G_MAX_USER_KINTAIS).destroy_all if kintais.count - G_MAX_USER_KINTAIS > 0
+        cnt = kintais.count - G_MAX_USER_KINTAIS
+        kintais.limit(cnt).destroy_all if cnt > 0
       end
     end
 
