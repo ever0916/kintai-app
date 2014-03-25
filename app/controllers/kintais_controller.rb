@@ -54,16 +54,16 @@ class KintaisController < ApplicationController
   # POST /kintais.json
   def create
     @kintai      = Kintai.new(kintai_params)
+    @kintai.t_syukkin = Time.now
 
     ActiveRecord::Base.transaction do
       #レコード登録数が最大数を超える場合、一番出勤時間が古く、idが一番若いレコードを削除する。
       @kintais.reorder(nil).order("t_syukkin ASC,id ASC").first.destroy if @kintais.count >= G_MAX_USER_KINTAIS
-      @kintai.t_syukkin = Time.now
       @kintai.save!
       current_user.update_attributes!(:f_state => !current_user.f_state ) 
-      flash[:notice] = "おはようございます。正常に記録されました。"
     end
-
+    
+    flash[:notice] = "おはようございます。正常に記録されました。"
     respond_with @kintai,:location => kintais_url
   end
   # PATCH/PUT /kintais/1
