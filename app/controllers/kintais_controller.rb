@@ -15,9 +15,7 @@ class KintaisController < ApplicationController
   # GET /kintais
   # GET /kintais.json
   def index
-    if current_user.f_state == true
-      @kintai = @kintais.last if @kintais != nil
-    end
+    @kintai = @kintais.last if current_user.f_state == true
 
     #指定した月の勤怠レコードを@kintaisに取得。
     @kintais = @kintais.reorder(nil).where(:t_syukkin => @target_date_min..@target_date_max ).order("t_syukkin ASC")#reorder(nil)で直前のorder byを無効に出来るっぽい
