@@ -205,9 +205,7 @@ class KintaisController < ApplicationController
     #データベースに２重登録がされ、登録できる最大行数を超えていないかチェックする。
     #修正の必要があると判断される場合trueを返す。
     def db_check
-      ret = false
-
-      return ret if current_user.f_admin == false
+      return false if current_user.f_admin == false
 
       #ユーザー数が超えていないか
       return true if User.count > G_MAX_USERS
@@ -218,6 +216,6 @@ class KintaisController < ApplicationController
         return true if Kintai.all.where(:user_id => user.id).count - G_MAX_USER_KINTAIS > 0
       end
 
-      return ret
+      return false
     end
 end
