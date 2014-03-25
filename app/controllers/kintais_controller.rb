@@ -33,15 +33,7 @@ class KintaisController < ApplicationController
   end
 
   def export
-    tmpfile = Kintai.export(@target_date_min,@target_date_max)
-
-    respond_to do |format|
-      format.html
-      #format.csv { send_data @kintais.to_csv, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.csv"}
-      format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
-    end
-
-    tmpfile.close(true)
+    Kintai.export(@target_date_min,@target_date_max)
   end
 
   # GET /kintais/1

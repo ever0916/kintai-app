@@ -85,7 +85,11 @@ class Kintai < ActiveRecord::Base
 
     tmpfile.open # reopen
     
-    return tmpfile
+    respond_to do |format|
+      format.xls { send_data tmpfile.read, filename: "future-lab_kintais#{Time.now.strftime('%Y_%m_%d_%H_%M_%S')}.xls"}
+    end
+
+    tmpfile.close(true)
   end
 
   #エクセルシートの対象行の背景を赤くし、その行の３列目にerr_msgを出力する。
