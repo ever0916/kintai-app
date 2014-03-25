@@ -22,28 +22,14 @@ class Kintai < ActiveRecord::Base
 
     return if target_date_min == nil || target_date_max == nil
 
-    @users   = User.all.order("id ASC")
-    @kintais = Kintai.all
-
     #テンプレートファイルの生成
-    book = Spreadsheet::Workbook.new
-    @users.each do |user|
+    @book = Spreadsheet::Workbook.new
+    User.all.order("id ASC").each do |user|
       #シートの生成。名前を付ける
-      @sheet = book.create_worksheet(:name => user.name)
+      @sheet = self.create_sheet_tmp user.name,target_date_max
 
       #指定した月の勤怠レコードを@kintaisに取得。
-      @user_kintais = @kintais.where(:t_syukkin => target_date_min..target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
-      
-      @sheet[0,0] = user.name
-      @sheet[0,1] = target_date_max.strftime("%Y年%m月分")
-      @sheet[2,0] = "出勤時刻"
-      @sheet[2,1] = "退勤時刻"
-      @sheet[2,2] = "勤務時間"
-
-      for i in 0..2 do
-        @sheet.column(i).width = 15 # カラム幅設定
-      end
-      @sheet.column(3).width = 100
+      @user_kintais = Kintai.all.where(:t_syukkin => target_date_min..target_date_max ).where(:user_id => user.id).order("t_syukkin ASC")
 
       goukei = 0
       @f_err  = false
@@ -78,11 +64,29 @@ class Kintai < ActiveRecord::Base
 
     #ダウンロードする為にtempファイルを作成
     tmpfile = Tempfile.new ["test", ".xls"]
-    book.write tmpfile
+    @book.write tmpfile
 
     tmpfile.open # reopen
 
     return tmpfile
+  end
+
+  #シートのテンプレートを設定
+  def self.create_sheet_tmp(user_name,date)
+    sheet = @book.create_worksheet(:name => user_name)
+
+    sheet[0,0] = user_name
+    sheet[0,1] = date.strftime("%Y年%m月分")
+    sheet[2,0] = "出勤時刻"
+    sheet[2,1] = "退勤時刻"
+    sheet[2,2] = "勤務時間"
+
+    for i in 0..2 do
+      sheet.column(i).width = 15 # カラム幅設定
+    end
+    sheet.column(3).width = 100
+
+    return sheet
   end
 
   #エクセルシートの対象行に時間を何時間、何分の形式で出力する。
